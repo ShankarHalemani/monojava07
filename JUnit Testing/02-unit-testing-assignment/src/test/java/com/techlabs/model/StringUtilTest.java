@@ -40,7 +40,7 @@ class StringUtilTest {
                 ()-> Assertions.assertFalse(util.firstAndLastTwoCharactersAreEqual("ABBBA")),
                 ()-> Assertions.assertTrue(util.firstAndLastTwoCharactersAreEqual("ABCDAB")),
                 ()-> Assertions.assertFalse(util.firstAndLastTwoCharactersAreEqual("ABC")),
-                ()-> Assertions.assertFalse(util.firstAndLastTwoCharactersAreEqual("AB")),
+                ()-> Assertions.assertTrue(util.firstAndLastTwoCharactersAreEqual("AB")),
                 ()-> Assertions.assertFalse(util.firstAndLastTwoCharactersAreEqual("A")),
                 ()-> Assertions.assertFalse(util.firstAndLastTwoCharactersAreEqual(""))
         );
