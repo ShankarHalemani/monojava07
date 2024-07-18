@@ -1,0 +1,5 @@
+package com.techlabs.model;
+
+public enum Gender {
+	Male, Female;
+}
