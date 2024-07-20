@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 
+
 <%@include file="includes/taglibs.jsp"%>
 <!DOCTYPE html>
 <html>
@@ -25,7 +26,7 @@
 		<input type="hidden" name="command" value="search-customer" />
 		<div class="container">
 			<div class="mb-3">
-				<input type="number" class="form-control" name="customer-id"
+				<input type="text" class="form-control" name="customer-id"
 					placeholder="Enter Customer ID to Search" />
 			</div>
 			<div class="d-grid gap-2 col-3 mx-auto">
@@ -46,7 +47,7 @@
 			</thead>
 
 			<tbody>
-				<c:forEach var="customer" items="${theCustomersList}">
+				<c:forEach var="customer" items="${theCustomer}">
 					<tr>
 						<td>${customer.customerId}</td>
 						<td>${customer.firstName}</td>
@@ -59,10 +60,17 @@
 
 
 		<form action="admin-function" method="post" class="mt-3">
+
+
+			<c:forEach var="customer" items="${theCustomer}">
+				<input type="hidden" name="customerId"
+					value="${customer.customerId}" />
+			</c:forEach>
+
 			<input type="hidden" name="command" value="add-bank-account" />
-			<div class="container">
+			<div class="container mt-5">
 				<div class="d-grid gap-2 col-3 mx-auto mt-2">
-					<button class="btn btn-outline-secondary" type="button">Generate
+					<button class="btn btn-outline-secondary" type="submit">Generate
 						Account Number</button>
 				</div>
 			</div>

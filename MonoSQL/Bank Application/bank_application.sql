@@ -27,7 +27,7 @@ CREATE TABLE transactions
     tnumber INT AUTO_INCREMENT PRIMARY KEY,
     sender_account_number INT NOT NULL,
     receiver_account_number INT NOT NULL,
-    date_of_transaction DATETIME default (CURRENT_DATE),
+    date_of_transaction DATETIME DEFAULT CURRENT_TIMESTAMP,
     transaction_type VARCHAR(20),
     transaction_amount DECIMAL(15, 2),
     FOREIGN KEY (sender_account_number) REFERENCES accounts(account_number),
@@ -66,14 +66,15 @@ INSERT INTO accounts (custid, balance) VALUES
 -- Insert sample data into transactions table
 -- Insert sample data into transactions table without the description field
 INSERT INTO transactions (sender_account_number, receiver_account_number, date_of_transaction, transaction_type, transaction_amount) VALUES
-(50000, 50001, '2024-07-18', 'transfer', 100.00),  -- John to Jane
-(50002, 50000, '2024-07-19', 'transfer', 200.00),  -- Michael to John
-(50001, 50003, '2024-07-20', 'transfer', 150.00),  -- Jane to Emily
-(50004, 50005, '2024-07-21', 'transfer', 300.00),  -- David to Sarah
-(50006, 50007, '2024-07-22', 'transfer', 400.00),  -- James to Laura
-(50008, 50009, '2024-07-23', 'transfer', 500.00),  -- Daniel to Anna
-(50003, 50006, '2024-07-24', 'transfer', 250.00),  -- Emily to James
-(50007, 50002, '2024-07-25', 'transfer', 350.00),  -- Laura to Michael
-(50005, 50004, '2024-07-26', 'transfer', 450.00),  -- Sarah to David
-(50009, 50008, '2024-07-27', 'transfer', 550.00);  -- Anna to Daniel
+(50000, 50001, '2024-07-18 10:15:00', 'transfer', 100.00),  -- John to Jane
+(50002, 50000, '2024-07-19 11:30:00', 'transfer', 200.00),  -- Michael to John
+(50001, 50003, '2024-07-20 12:45:00', 'transfer', 150.00),  -- Jane to Emily
+(50004, 50005, '2024-07-21 14:00:00', 'transfer', 300.00),  -- David to Sarah
+(50006, 50007, '2024-07-22 15:15:00', 'transfer', 400.00),  -- James to Laura
+(50008, 50009, '2024-07-23 16:30:00', 'transfer', 500.00),  -- Daniel to Anna
+(50003, 50006, '2024-07-24 17:45:00', 'transfer', 250.00),  -- Emily to James
+(50007, 50002, '2024-07-25 19:00:00', 'transfer', 350.00),  -- Laura to Michael
+(50005, 50004, '2024-07-26 20:15:00', 'transfer', 450.00),  -- Sarah to David
+(50009, 50008, '2024-07-27 21:30:00', 'transfer', 550.00);  -- Anna to Daniel
+
 

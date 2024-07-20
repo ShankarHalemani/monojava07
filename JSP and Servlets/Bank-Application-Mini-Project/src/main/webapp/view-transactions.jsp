@@ -17,10 +17,10 @@
 		<nav class="navbar bg-secondary rounded border p-4 mt-3">
 			<div
 				class="container-fluid d-flex justify-content-center align-items-center">
-				<h1 >View Transactions</h1>
+				<h1>View Transactions</h1>
 			</div>
 		</nav>
-		
+
 		<table class="table table-striped table-bordered mt-3">
 			<thead>
 				<tr>
@@ -33,13 +33,13 @@
 			</thead>
 
 			<tbody>
-				<c:forEach var="customer" items="${theCustomersList}">
+				<c:forEach var="transaction" items="${theTransactions}">
 					<tr>
-						<td>${customer.SaccountNumber}</td>
-						<td>${customer.RaccountNumber}</td>
-						<td>${customer.transactionType}</td>
-						<td>${customer.amount}</td>
-						<td>${customer.date}</td>
+						<td>${transaction.senderAccountNumber}</td>
+						<td>${transaction.receiverAccountNumber}</td>
+						<td>${transaction.transactionType}</td>
+						<td>${transaction.transactionAmount}</td>
+						<td>${transaction.dateOfTransaction}</td>
 					</tr>
 				</c:forEach>
 			</tbody>

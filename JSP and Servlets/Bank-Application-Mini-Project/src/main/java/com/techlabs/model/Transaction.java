@@ -1,17 +1,18 @@
 package com.techlabs.model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 public class Transaction {
 	private int transactionId;
 	private int senderAccountNumber;
 	private int receiverAccountNumber;
-	private Date dateOfTransaction;
+	private Timestamp dateOfTransaction;
 	private String transactionType;
 	private double transactionAmount;
 
-	public Transaction(int transactionId, int senderAccountNumber, int receiverAccountNumber, Date dateOfTransaction,
-			String transactionType, double transactionAmount) {
+	public Transaction(int transactionId, int senderAccountNumber, int receiverAccountNumber,
+			Timestamp dateOfTransaction, String transactionType, double transactionAmount) {
+		super();
 		this.transactionId = transactionId;
 		this.senderAccountNumber = senderAccountNumber;
 		this.receiverAccountNumber = receiverAccountNumber;
@@ -44,11 +45,11 @@ public class Transaction {
 		this.receiverAccountNumber = receiverAccountNumber;
 	}
 
-	public Date getDateOfTransaction() {
+	public Timestamp getDateOfTransaction() {
 		return dateOfTransaction;
 	}
 
-	public void setDateOfTransaction(Date dateOfTransaction) {
+	public void setDateOfTransaction(Timestamp dateOfTransaction) {
 		this.dateOfTransaction = dateOfTransaction;
 	}
 
@@ -66,13 +67,6 @@ public class Transaction {
 
 	public void setTransactionAmount(double transactionAmount) {
 		this.transactionAmount = transactionAmount;
-	}
-
-	@Override
-	public String toString() {
-		return "Transaction [transactionId=" + transactionId + ", senderAccountNumber=" + senderAccountNumber
-				+ ", receiverAccountNumber=" + receiverAccountNumber + ", dateOfTransaction=" + dateOfTransaction
-				+ ", transactionType=" + transactionType + ", transactionAmount=" + transactionAmount + "]";
 	}
 
 }

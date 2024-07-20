@@ -1,8 +1,11 @@
 package com.techlabs.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Resource;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -45,7 +48,7 @@ public class AdminFunctions extends HttpServlet {
 		}
 
 		case "add-bank-account": {
-			addBankAccount(request, response);
+			createBankAccount(request, response);
 			break;
 		}
 
@@ -68,13 +71,30 @@ public class AdminFunctions extends HttpServlet {
 
 	}
 
-	private void searchCustomer(HttpServletRequest request, HttpServletResponse response) {
-		// TODO Auto-generated method stub
+	private void searchCustomer(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		int customerId = Integer.parseInt(request.getParameter("customer-id"));
+		List<Customer> customer = customerDbUtil.getCustomer(customerId);
+		if (customer == null) {
+			customer = new ArrayList<Customer>();
+		}
+		request.setAttribute("theCustomer", customer);
+		if (!response.isCommitted()) {
+			RequestDispatcher requestDispatcher = request.getRequestDispatcher("add-bank-account.jsp");
+			requestDispatcher.forward(request, response);
+		}
 
 	}
 
-	private void addBankAccount(HttpServletRequest request, HttpServletResponse response)
+	private void createBankAccount(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
+		String customerIdStr = request.getParameter("customerId");
+		System.out.println(customerIdStr);
+		if (customerIdStr != null && !customerIdStr.isEmpty()) {
+			int customerId = Integer.parseInt(customerIdStr);
+			customerDbUtil.createCustomerAccount(customerId);
+		}
+		response.sendRedirect(request.getContextPath() + "/admin");
 
 	}
 }

@@ -31,13 +31,13 @@
 			</thead>
 
 			<tbody>
-				<c:forEach var="customer" items="${theCustomersList}">
+				<c:forEach var="customerAccount" items="${theCustomerAccounts}">
 					<tr>
-						<td>${customer.customerId}</td>
-						<td>${customer.firstName}</td>
-						<td>${customer.lastName}</td>
-						<td>${customer.accountNumber}</td>
-						<td>${customer.balance}</td>
+						<td>${customerAccount.customer.customerId}</td>
+						<td>${customerAccount.customer.firstName}</td>
+						<td>${customerAccount.customer.lastName}</td>
+						<td>${customerAccount.account.accountNumber}</td>
+						<td>${customerAccount.account.balance}</td>
 					</tr>
 				</c:forEach>
 			</tbody>
