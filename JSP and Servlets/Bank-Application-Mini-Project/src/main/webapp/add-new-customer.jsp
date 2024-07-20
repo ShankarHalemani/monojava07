@@ -49,7 +49,7 @@
 							<button type="submit" class="btn btn-primary">Add</button>
 						</div>
 						<div class="col text-center">
-							<button type="submit" class="btn btn-warning" name="command"
+							<button type="reset" class="btn btn-warning" name="command"
 								value="cancel">Cancel</button>
 						</div>
 						

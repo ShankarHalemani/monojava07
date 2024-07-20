@@ -27,13 +27,21 @@
 						</tr>
 					</thead>
 					<tbody>
-						<c:forEach var="d" items="${data}">
+						<c:forEach var="transaction" items="${theTransactions}">
 							<tr>
-								<td>${d.sender_account_number}</td>
-								<td>${d.receiver_account_number}</td>
-								<td>${d.Transactiot}</td>
-								<td>${d.amount}</td>
-								<td>${d.delete}</td>
+								<td>${transaction.senderAccountNumber}</td>
+								<td>${transaction.receiverAccountNumber}</td>
+								<td><c:choose>
+										<c:when
+											test="${transaction.senderAccountNumber == currentUserAccountNumber}">
+											Debit
+										</c:when>
+										<c:otherwise>
+											Credit
+										</c:otherwise>
+									</c:choose></td>
+								<td>${transaction.transactionAmount}</td>
+								<td>${transaction.dateOfTransaction}</td>
 							</tr>
 						</c:forEach>
 					</tbody>

@@ -141,4 +141,21 @@ public class CustomerDbUtil {
 		return customerAccounts;
 	}
 
+	public void updateCustomer(Customer customer) {
+		try {
+			Connection connection = dataSource.getConnection();
+			String updateQuery = "UPDATE customer SET fname=?, lname=?, pass=? WHERE email=?";
+			PreparedStatement preparedStatement = connection.prepareStatement(updateQuery);
+			preparedStatement.setString(1, customer.getFirstName());
+			preparedStatement.setString(2, customer.getLastName());
+			preparedStatement.setString(3, customer.getPassword());
+			preparedStatement.setString(4, customer.getEmailId());
+			preparedStatement.executeUpdate();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+	}
+
 }

@@ -36,15 +36,6 @@
 					</div>
 				</nav>
 			</form>
-
-			<!-- <div class="container-fluid">
-				<a class="navbar-brand nav-link" href="add-new-customer.jsp">Add
-					New Customer</a> <a class="navbar-brand nav-link"
-					href="add-bank-account.jsp">Add Bank Account</a> <a
-					class="navbar-brand nav-link" href="view-customers.jsp">View
-					Customers</a> <a class="navbar-brand nav-link"
-					href="view-transactions.jsp">View Transactions</a>
-			</div> -->
 		</nav>
 
 		<div class="text-center mt-4">

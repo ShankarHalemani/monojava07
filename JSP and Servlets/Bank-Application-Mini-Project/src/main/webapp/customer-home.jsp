@@ -10,37 +10,36 @@
 <%@include file="includes/bootstrapcss.jsp"%>
 </head>
 <body>
-  <div class="container mt-3">
-    <div class="row justify-content-center">
-      <div class="col-lg-12">
-        <div class="border rounded border-secondary bg-secondary text-center p-4">
-          <h1>Customer Home</h1>
-        </div>
-      </div>
-    </div>
-    <div class="row justify-content-center mt-3">
-      <div class="col-lg-12">
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-          <div class="container-fluid justify-content-center">
-            <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link fs-5" href="passbook.jsp" style="margin-right: 10rem;">Passbook</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link fs-5" href="new-transaction.jsp" style="margin-right: 10rem;">Transaction</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link fs-5 mx-5 mr-5" href="edit-profile.jsp">Edit Profile</a>
-              </li>
-            </ul>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-              <span class="navbar-toggler-icon"></span>
-            </button>
-          </div>
-        </nav>
-      </div>
-    </div>
-  </div>
+	<div class="container mt-3">
+
+		<nav class="navbar bg-secondary border rounded p-4">
+			<div
+				class="container-fluid d-flex justify-content-center align-items-center">
+				<h1>Customer Home</h1>
+			</div>
+		</nav>
+
+		<nav
+			class="navbar navbar-expand-lg navbar-light bg-light mt-3 px-5 border rounded">
+			<form action="user" method="get" class="w-100">
+				<div class="d-flex justify-content-around">
+					<input type="submit" name="customer-function" value="Passbook"
+						class="navbar-brand nav-link mx-2" /> <input type="submit"
+						name="customer-function" value="New Transaction"
+						class="navbar-brand nav-link mx-2" /> <input type="submit"
+						name="customer-function" value="Edit Profile"
+						class="navbar-brand nav-link mx-2" />
+				</div>
+			</form>
+		</nav>
+
+		<div class="text-center mt-4">
+			<img src="./includes/bank.jpeg" class="rounded img-fluid"
+				alt="Bank-image" width="70%" />
+		</div>
+
+	</div>
+
+	<%@include file="includes/bootstrapjs.jsp"%>
 </body>
 </html>

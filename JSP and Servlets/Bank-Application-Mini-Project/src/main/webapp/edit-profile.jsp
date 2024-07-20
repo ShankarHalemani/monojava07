@@ -21,24 +21,31 @@
 		<div class="row justify-content-center mt-3">
 			<div class="col-lg-6">
 				<div class="p-4 border bg-light text-center">
-					<form>
+					<form action="user-function" method="post">
+					<input type="hidden" name="command" value="submit-profile" />
 						<div class="form-group mb-4">
 							<label for="accountNumber">First Name</label> <input type="text"
 								class="form-control" id="accountNumber"
-								placeholder="Enter First Name">
+								placeholder="Enter First Name" name="c-fname">
 						</div>
 						<div class="form-group mb-4">
 							<label for="amount">Last Name</label> <input type="text"
-								class="form-control" id="amount" placeholder="Enter Last Name">
+								class="form-control" id="amount" placeholder="Enter Last Name"
+								name="c-lname">
 						</div>
 						<div class="form-group mb-4">
 							<label for="password">Password</label> <input type="text"
-								class="form-control" id="password" placeholder="Enter Password">
+								class="form-control" id="password" placeholder="Enter Password"
+								name="c-password">
 						</div>
-						<div class="form-group mt-4">
-							<!-- Added margin-top for more space -->
-							<button type="submit" class="btn btn-primary mr-2">Update</button>
-							<button type="reset" class="btn btn-secondary">Cancel</button>
+						<div class="form-group row mt-4">
+							<div class="col text-center">
+								<button type="submit" class="btn btn-primary">Update</button>
+							</div>
+							<div class="col text-center">
+								<button type="reset" class="btn btn-warning" name="command"
+									value="cancel">Cancel</button>
+							</div>
 						</div>
 					</form>
 				</div>

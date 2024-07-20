@@ -51,7 +51,7 @@ INSERT INTO customer (fname, lname, email, pass) VALUES
 
 -- Insert sample data into accounts table
 INSERT INTO accounts (custid, balance) VALUES
-(10000, 1000.00),  -- John Doe
+(10000, 100000.00),  -- John Doe
 (10001, 2000.00),  -- Jane Smith
 (10002, 1500.00),  -- Michael Johnson
 (10003, 2500.00),  -- Emily Davis
@@ -76,5 +76,3 @@ INSERT INTO transactions (sender_account_number, receiver_account_number, date_o
 (50007, 50002, '2024-07-25 19:00:00', 'transfer', 350.00),  -- Laura to Michael
 (50005, 50004, '2024-07-26 20:15:00', 'transfer', 450.00),  -- Sarah to David
 (50009, 50008, '2024-07-27 21:30:00', 'transfer', 550.00);  -- Anna to Daniel
-
-

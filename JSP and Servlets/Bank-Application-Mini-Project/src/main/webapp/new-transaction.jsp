@@ -23,22 +23,30 @@
 				<div class="p-4 border bg-light text-center">
 					<h2 class="mb-4">TRANSFER</h2>
 					<!-- Added margin-bottom for more space -->
-					<form>
+					<form action="user-function" method="post">
+						<input type="hidden" name="command" value="make-transaction" />
 						<div class="form-group mb-4">
 							<!-- Added margin-bottom for more space -->
 							<label for="accountNumber">Account Number</label> <input
 								type="text" class="form-control" id="accountNumber"
-								placeholder="Enter account number">
+								placeholder="Enter account number"
+								name="receiver-account-number">
 						</div>
 						<div class="form-group mb-4">
 							<!-- Added margin-bottom for more space -->
 							<label for="amount">Amount</label> <input type="text"
-								class="form-control" id="amount" placeholder="Enter amount">
+								class="form-control" id="amount" placeholder="Enter amount"
+								name="transfer-amount">
 						</div>
-						<div class="form-group mt-4">
-							<!-- Added margin-top for more space -->
-							<button type="submit" class="btn btn-primary mr-2">Submit</button>
-							<button type="reset" class="btn btn-secondary">Cancel</button>
+						
+						<div class="form-group row mt-4">
+							<div class="col text-center">
+								<button type="submit" class="btn btn-primary">Submit</button>
+							</div>
+							<div class="col text-center">
+								<button type="reset" class="btn btn-warning" name="command"
+									value="cancel">Cancel</button>
+							</div>
 						</div>
 					</form>
 				</div>
