@@ -11,9 +11,8 @@
 </head>
 <body>
 
-	
-	<%@include file="includes/header.jsp"%>
-	<div class="container">
+	<div class="container mt-3">
+		<%@include file="includes/header.jsp"%>
 		<div class="card w-50 mx-auto my-5">
 			<div class="card-header text-center">Login</div>
 			<div class="card-body">
@@ -28,6 +27,12 @@
 						<label>Password</label> <input type="password"
 							class="form-control" name="login-password"
 							placeholder="Enter password" required />
+					</div>
+					
+					<div class="form-group">
+						<c:if test="${param.error != null}">
+							<p style="color: red;">Invalid Email ID or password</p>
+						</c:if>
 					</div>
 
 					<div class="form-group mb-3 text-center">
@@ -53,6 +58,8 @@
 								value="cancel">Cancel</button>
 						</div>
 					</div>
+
+					
 				</form>
 			</div>
 		</div>

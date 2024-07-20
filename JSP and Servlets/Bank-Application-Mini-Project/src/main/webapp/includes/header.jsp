@@ -1,6 +1,6 @@
-<nav class="navbar bg-body-tertiary">
+<nav class="navbar bg-secondary border rounded p-4">
 		<div
 			class="container-fluid d-flex justify-content-center align-items-center">
-			<h1 class="navbar-brand my-2">Bank Management System</h1>
+			<h1 >Bank Management System</h1>
 		</div>
 	</nav>

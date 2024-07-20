@@ -10,19 +10,19 @@
 <%@include file="includes/bootstrapcss.jsp"%>
 </head>
 <body>
-	<%@include file="includes/header.jsp"%>
-	<hr />
 
-	<nav class="navbar bg-body-tertiary">
-		<div
-			class="container-fluid d-flex justify-content-center align-items-center">
-			<h1 class="navbar-brand my-2 py-2">Add New Account</h1>
-		</div>
-	</nav>
+	<div class="container">
+		<nav class="navbar bg-secondary border rounded mt-3 p-4">
+			<div
+				class="container-fluid d-flex justify-content-center align-items-center">
+				<h1>Add New Account</h1>
+			</div>
+		</nav>
+	</div>
 
-	<hr />
 
-	<form>
+	<form action="admin-function" method="post" class="mt-3">
+		<input type="hidden" name="command" value="search-customer" />
 		<div class="container">
 			<div class="mb-3">
 				<input type="number" class="form-control" name="customer-id"
@@ -57,10 +57,18 @@
 			</tbody>
 		</table>
 
-		<div class="d-grid gap-2 col-3 mx-auto mt-2">
-			<button class="btn btn-outline-secondary" type="button">Generate
-				Account Number</button>
-		</div>
+
+		<form action="admin-function" method="post" class="mt-3">
+			<input type="hidden" name="command" value="add-bank-account" />
+			<div class="container">
+				<div class="d-grid gap-2 col-3 mx-auto mt-2">
+					<button class="btn btn-outline-secondary" type="button">Generate
+						Account Number</button>
+				</div>
+			</div>
+		</form>
+
+
 	</div>
 
 

@@ -10,20 +10,16 @@
 <%@include file="includes/bootstrapcss.jsp"%>
 </head>
 <body>
-	<%@include file="includes/header.jsp"%>
-	<hr />
 
-	<nav class="navbar bg-body-tertiary">
-		<div
-			class="container-fluid d-flex justify-content-center align-items-center">
-			<h1 class="navbar-brand my-2 py-2">View Customers</h1>
-		</div>
-	</nav>
+	<div class="container">
+		<nav class="navbar bg-secondary p-4 border rounded mt-3">
+			<div
+				class="container-fluid d-flex justify-content-center align-items-center">
+				<h1>View Customers</h1>
+			</div>
+		</nav>
 
-	<hr />
-
-	<div class="container my-5">
-		<table class="table table-striped">
+		<table class="table table-striped table-bordered mt-3">
 			<thead>
 				<tr>
 					<th>Customer ID</th>
