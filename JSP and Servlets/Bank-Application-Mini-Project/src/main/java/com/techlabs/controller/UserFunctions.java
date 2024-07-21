@@ -65,15 +65,20 @@ public class UserFunctions extends HttpServlet {
 		double transferAmount = Double.parseDouble(request.getParameter("transfer-amount"));
 		System.out.println(transferAmount);
 
-		if (transactionDbUtil.checkAccountExists(receiverAccount)) {
-			if (transactionDbUtil.checkSufficientBalance(emailId, transferAmount)) {
-				transactionDbUtil.commitTransaction(emailId, receiverAccount, transferAmount);
-				request.setAttribute("message", "Transaction successful.");
+		if (!transactionDbUtil.checkSameAccountTransfer(emailId, receiverAccount)) {
+			if (transactionDbUtil.checkAccountExists(receiverAccount)) {
+				if (transactionDbUtil.checkSufficientBalance(emailId, transferAmount)) {
+					transactionDbUtil.commitTransaction(emailId, receiverAccount, transferAmount);
+					request.setAttribute("message", "Transaction successful.");
+				} else {
+					request.setAttribute("message", "Insufficient Balance");
+				}
 			} else {
-				request.setAttribute("message", "Insufficient Balance");
+				request.setAttribute("message", "Account Doesn't exist");
 			}
 		} else {
-			request.setAttribute("message", "Account Doesn't exist");
+			request.setAttribute("message",
+					"Error: Self-transfers are not allowed. Please choose a different recipient account");
 		}
 
 		request.getRequestDispatcher("/new-transaction.jsp").forward(request, response);

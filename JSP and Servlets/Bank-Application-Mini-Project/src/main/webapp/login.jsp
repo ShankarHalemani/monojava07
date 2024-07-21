@@ -28,7 +28,7 @@
 							class="form-control" name="login-password"
 							placeholder="Enter password" required />
 					</div>
-					
+
 					<div class="form-group">
 						<c:if test="${param.error != null}">
 							<p style="color: red;">Invalid Email ID or password</p>
@@ -59,7 +59,7 @@
 						</div>
 					</div>
 
-					
+
 				</form>
 			</div>
 		</div>

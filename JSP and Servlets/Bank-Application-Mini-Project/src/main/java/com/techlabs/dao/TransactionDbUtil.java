@@ -102,6 +102,26 @@ public class TransactionDbUtil {
 		return accountNumber;
 	}
 
+	public boolean checkSameAccountTransfer(String emailId, int receiverAccount) {
+		int accountNumber = 0;
+		try {
+			Connection connection = dataSource.getConnection();
+			String selectQuery = "SELECT A.account_number FROM accounts A JOIN customer C ON A.custid=C.custid WHERE email=?";
+			PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement.setString(1, emailId);
+			ResultSet resultSet = preparedStatement.executeQuery();
+
+			while (resultSet.next()) {
+				accountNumber = resultSet.getInt("account_number");
+			}
+
+			return accountNumber == receiverAccount;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	public boolean checkAccountExists(int receiverAccount) {
 		try {
 			Connection connection = dataSource.getConnection();
