@@ -71,7 +71,7 @@ This is a Java-based MVC (Model-View-Controller) application for managing bankin
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/yourusername/bank-mvc-application.git
+    git clone https://github.com/ShankarHalemani/monojava07/tree/main/JSP%20and%20Servlets/Bank-Application-Mini-Project
     ```
 
 2. Open the project in your preferred IDE (e.g., IntelliJ IDEA).
