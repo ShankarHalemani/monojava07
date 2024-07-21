@@ -44,6 +44,15 @@
 				</c:forEach>
 			</tbody>
 		</table>
+		
+		<form action="admin" method="get">
+					<div class="form-group row mt-4">
+						<div class="col text-center">
+							<button type="submit" name="admin-function"
+								value="" class="btn btn-danger">Cancel</button>
+						</div>
+					</div>
+				</form>
 	</div>
 
 

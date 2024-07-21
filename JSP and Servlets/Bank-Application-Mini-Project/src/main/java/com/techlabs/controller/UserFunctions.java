@@ -64,9 +64,19 @@ public class UserFunctions extends HttpServlet {
 		System.out.println(receiverAccount);
 		double transferAmount = Double.parseDouble(request.getParameter("transfer-amount"));
 		System.out.println(transferAmount);
-		transactionDbUtil.commitTransaction(emailId, receiverAccount, transferAmount);
 
-		response.sendRedirect(request.getContextPath() + "/user");
+		if (transactionDbUtil.checkAccountExists(receiverAccount)) {
+			if (transactionDbUtil.checkSufficientBalance(emailId, transferAmount)) {
+				transactionDbUtil.commitTransaction(emailId, receiverAccount, transferAmount);
+				request.setAttribute("message", "Transaction successful.");
+			} else {
+				request.setAttribute("message", "Insufficient Balance");
+			}
+		} else {
+			request.setAttribute("message", "Account Doesn't exist");
+		}
+
+		request.getRequestDispatcher("/new-transaction.jsp").forward(request, response);
 
 	}
 
@@ -81,7 +91,8 @@ public class UserFunctions extends HttpServlet {
 		Customer customer = new Customer(0, firstName, lastName, emailId, password);
 		customerDbUtil.updateCustomer(customer);
 
-		response.sendRedirect(request.getContextPath() + "/user");
+		request.setAttribute("message", "Profile updated successfully.");
+		request.getRequestDispatcher("/edit-profile.jsp").forward(request, response);
 	}
 
 }

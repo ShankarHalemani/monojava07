@@ -17,7 +17,7 @@ CREATE TABLE customer
 CREATE TABLE accounts
 (
     account_number INT AUTO_INCREMENT PRIMARY KEY,
-    custid INT NOT NULL,
+    custid INT NOT NULL UNIQUE,
     balance DECIMAL(15, 2) DEFAULT 500,
     FOREIGN KEY (custid) REFERENCES customer(custid)
 ) AUTO_INCREMENT = 50000;  -- Start account_number from 50000

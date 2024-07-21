@@ -19,6 +19,13 @@
 				<h1>Add New Account</h1>
 			</div>
 		</nav>
+		
+		<c:if test="${not empty message}">
+			<div class="alert alert-primary alert-dismissible fade show w-50 mx-auto my-3" role="alert">
+				${message}
+				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+			</div>
+		</c:if>
 	</div>
 
 
@@ -75,6 +82,15 @@
 				</div>
 			</div>
 		</form>
+		
+		<form action="admin" method="get">
+					<div class="form-group row mt-4">
+						<div class="col text-center">
+							<button type="submit" name="admin-function"
+								value="" class="btn btn-danger">Cancel</button>
+						</div>
+					</div>
+				</form>
 
 
 	</div>

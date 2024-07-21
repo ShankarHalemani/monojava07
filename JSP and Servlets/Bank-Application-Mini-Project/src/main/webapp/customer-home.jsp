@@ -35,8 +35,16 @@
 
 		<div class="text-center mt-4">
 			<img src="./includes/bank.jpeg" class="rounded img-fluid"
-				alt="Bank-image" width="70%" />
+				alt="Bank-image" width="60%" />
 		</div>
+
+		<form action="logout" method="get">
+			<div class="form-group row mt-4">
+				<div class="col text-center">
+					<button type="submit" class="btn btn-primary">Logout</button>
+				</div>
+			</div>
+		</form>
 
 	</div>
 

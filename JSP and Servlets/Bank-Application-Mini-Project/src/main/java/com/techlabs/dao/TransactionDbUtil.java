@@ -102,6 +102,44 @@ public class TransactionDbUtil {
 		return accountNumber;
 	}
 
+	public boolean checkAccountExists(int receiverAccount) {
+		try {
+			Connection connection = dataSource.getConnection();
+			String selectQuery = "SELECT * FROM accounts WHERE account_number=?";
+			PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement.setInt(1, receiverAccount);
+			ResultSet resultSet = preparedStatement.executeQuery();
+
+			return resultSet.next();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	public boolean checkSufficientBalance(String emailId, double transferAmount) {
+		double customerBalance = 0;
+
+		try {
+			Connection connection = dataSource.getConnection();
+			String selectQuery = "SELECT A.account_number, A.balance FROM customer C JOIN accounts A ON C.custid=A.custid WHERE C.email = ?";
+			PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement.setString(1, emailId);
+			ResultSet resultSet = preparedStatement.executeQuery();
+
+			if (resultSet.next()) {
+				customerBalance = resultSet.getDouble("balance");
+			}
+
+			return customerBalance >= transferAmount;
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
 	public void commitTransaction(String emailId, int receiverAccount, double transferAmount) {
 		System.out.println("operational-commitTransaction");
 

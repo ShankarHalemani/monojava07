@@ -64,11 +64,16 @@ public class AdminFunctions extends HttpServlet {
 		String emailId = request.getParameter("customer-email");
 		String password = request.getParameter("customer-password");
 
-		Customer customer = new Customer(0, firstName, lastName, emailId, password);
-		customerDbUtil.addNewCustomer(customer);
+		if (customerDbUtil.chechCustomerExists(emailId)) {
+			request.setAttribute("message", "Customer Already exists");
 
-		response.sendRedirect(request.getContextPath() + "/admin");
+		} else {
+			Customer customer = new Customer(0, firstName, lastName, emailId, password);
+			customerDbUtil.addNewCustomer(customer);
+			request.setAttribute("message", "Customer added successfully.");
+		}
 
+		request.getRequestDispatcher("/add-new-customer.jsp").forward(request, response);
 	}
 
 	private void searchCustomer(HttpServletRequest request, HttpServletResponse response)
@@ -92,9 +97,15 @@ public class AdminFunctions extends HttpServlet {
 		System.out.println(customerIdStr);
 		if (customerIdStr != null && !customerIdStr.isEmpty()) {
 			int customerId = Integer.parseInt(customerIdStr);
-			customerDbUtil.createCustomerAccount(customerId);
+			if (customerDbUtil.checkCutomerAccountExists(customerId)) {
+				request.setAttribute("message", "Account already exists");
+			} else {
+				customerDbUtil.createCustomerAccount(customerId);
+				request.setAttribute("message", "Account created successfully");
+			}
 		}
-		response.sendRedirect(request.getContextPath() + "/admin");
+
+		request.getRequestDispatcher("/add-bank-account.jsp").forward(request, response);
 
 	}
 }

@@ -8,6 +8,14 @@
 <meta charset="UTF-8">
 <title>Passbook</title>
 <%@include file="includes/bootstrapcss.jsp"%>
+<style>
+    .credit {
+        color: green;
+    }
+    .debit {
+        color: red;
+    }
+</style>
 </head>
 <body>
 	<div class="container mt-3">
@@ -31,16 +39,26 @@
 							<tr>
 								<td>${transaction.senderAccountNumber}</td>
 								<td>${transaction.receiverAccountNumber}</td>
-								<td><c:choose>
-										<c:when
-											test="${transaction.senderAccountNumber == currentUserAccountNumber}">
-											Debit
+								<td>
+									<c:choose>
+										<c:when test="${transaction.senderAccountNumber == currentUserAccountNumber}">
+											<span class="debit">Debit</span>
 										</c:when>
 										<c:otherwise>
-											Credit
+											<span class="credit">Credit</span>
 										</c:otherwise>
-									</c:choose></td>
-								<td>${transaction.transactionAmount}</td>
+									</c:choose>
+								</td>
+								<td>
+									<c:choose>
+										<c:when test="${transaction.senderAccountNumber == currentUserAccountNumber}">
+											<span class="debit">-${transaction.transactionAmount}</span>
+										</c:when>
+										<c:otherwise>
+											<span class="credit">+${transaction.transactionAmount}</span>
+										</c:otherwise>
+									</c:choose>
+								</td>
 								<td>${transaction.dateOfTransaction}</td>
 							</tr>
 						</c:forEach>
@@ -48,6 +66,15 @@
 				</table>
 			</div>
 		</div>
+		
+		<form action="user" method="get">
+					<div class="form-group row mt-4">
+						<div class="col text-center">
+							<button type="submit" name="customer-function"
+								value="" class="btn btn-danger">Cancel</button>
+						</div>
+					</div>
+		</form>
 	</div>
 </body>
 </html>

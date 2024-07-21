@@ -42,6 +42,22 @@ public class CustomerDbUtil {
 		return false;
 	}
 
+	public boolean chechCustomerExists(String emailId) {
+		try {
+			Connection connection = dataSource.getConnection();
+			String selectQuery = "SELECT * FROM customer WHERE email=?";
+			PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement.setString(1, emailId);
+			ResultSet resultSet = preparedStatement.executeQuery();
+
+			return resultSet.next();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return false;
+	}
+
 	public void addNewCustomer(Customer customer) {
 		try {
 			Connection connection = dataSource.getConnection();
@@ -91,6 +107,23 @@ public class CustomerDbUtil {
 		}
 
 		return customers;
+	}
+
+	public boolean checkCutomerAccountExists(int customerId) {
+		try {
+			Connection connection = dataSource.getConnection();
+			String selectQuery = "SELECT * FROM accounts WHERE custid = ?";
+			PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement.setInt(1, customerId);
+			ResultSet resultSet = preparedStatement.executeQuery();
+
+			return resultSet.next();
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return false;
 	}
 
 	public void createCustomerAccount(int customerId) {
