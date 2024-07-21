@@ -126,15 +126,3 @@ This is a Java-based MVC (Model-View-Controller) application for managing bankin
 2. Enter the receiver's account number and the transfer amount.
 3. Submit the form.
 4. If the transaction is successful, a message will be displayed. If not, an error message will be shown.
-
-## Contributing
-
-Contributions are welcome! Please fork the repository and create a pull request with your changes.
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
-
-## Contact
-
-If you have any questions, feel free to contact the project maintainer at `your.email@example.com`.
