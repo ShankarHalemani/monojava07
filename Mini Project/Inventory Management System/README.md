@@ -32,7 +32,7 @@ The Inventory Management System is a Java-based application designed to manage p
 ### Clone the repository
 
 ```bash
-https://github.com/ShankarHalemani/monojava07/tree/main/Mini%20Project/Inventory%20Management%20System
+git clone https://github.com/ShankarHalemani/monojava07/tree/main/Mini%20Project/Inventory%20Management%20System
 ```
 
 ## Import the Project
