@@ -46,23 +46,33 @@ public class AdminController extends HttpServlet {
 
 		switch (command) {
 
-		case "Add New Customer": {
+		case "add-new-customer": {
 			addNewCustomer(request, response);
 			break;
 		}
 
-		case "Add Bank Account": {
+		case "add-bank-account": {
 			addBankAccount(request, response);
 			break;
 		}
 
-		case "View Customers": {
+		case "view-customers": {
 			viewCustomers(request, response);
 			break;
 		}
 
-		case "View Transactions": {
+		case "view-transactions": {
 			viewTransactions(request, response);
+			break;
+		}
+
+		case "byCustomer-id": {
+			viewCustomersById(request, response);
+			break;
+		}
+
+		case "byCustomer-name": {
+			viewCustomersByName(request, response);
 			break;
 		}
 
@@ -101,6 +111,26 @@ public class AdminController extends HttpServlet {
 		request.setAttribute("theCustomerAccounts", customerAccounts);
 		RequestDispatcher requestDispatcher = request.getRequestDispatcher("view-customers.jsp");
 		requestDispatcher.forward(request, response);
+	}
+
+	private void viewCustomersByName(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		List<CustomerAccount> customerAccounts;
+		String customerName = request.getParameter("searchCustomer");
+		customerAccounts = customerDbUtil.searchCustomersByName(customerName);
+		request.setAttribute("theCustomerAccounts", customerAccounts);
+		request.getRequestDispatcher("view-customers.jsp").forward(request, response);
+
+	}
+
+	private void viewCustomersById(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		List<CustomerAccount> customerAccounts;
+		String customerIdStr = request.getParameter("searchCustomer");
+		int customerId = Integer.parseInt(customerIdStr);
+		customerAccounts = customerDbUtil.searchCustomersById(customerId);
+		request.setAttribute("theCustomerAccounts", customerAccounts);
+		request.getRequestDispatcher("view-customers.jsp").forward(request, response);
 	}
 
 	private void viewTransactions(HttpServletRequest request, HttpServletResponse response)

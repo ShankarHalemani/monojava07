@@ -12,20 +12,34 @@
 <body>
 
 	<div class="container mt-3">
-		<nav class="navbar bg-secondary mt-3 p-4 border rounded">
+		<nav class="navbar bg-secondary mt-3 border rounded">
 			<div
-				class="container-fluid d-flex justify-content-center align-items-center">
-				<h1>Add New Customer</h1>
+				class="container-fluid d-flex justify-content-between align-items-center">
+				<div class="d-flex flex-grow-1 justify-content-center p-4">
+					<h1 class="mb-0">Add New Customer</h1>
+				</div>
+				<form action="logout" method="get" class="mb-0">
+					<div class="form-group row">
+						<div class="col text-end">
+							<button type="submit" class="btn btn-outline-light">Logout</button>
+						</div>
+					</div>
+				</form>
 			</div>
 		</nav>
-		
+
+
+
 		<c:if test="${not empty message}">
-			<div class="alert alert-primary alert-dismissible fade show w-50 mx-auto my-3" role="alert">
+			<div
+				class="alert alert-primary alert-dismissible fade show w-50 mx-auto my-3"
+				role="alert">
 				${message}
-				<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+				<button type="button" class="btn-close" data-bs-dismiss="alert"
+					aria-label="Close"></button>
 			</div>
 		</c:if>
-		
+
 		<div class="card w-50 mx-auto my-5">
 			<div class="card-body">
 				<form action="admin-function" method="post">
@@ -63,19 +77,19 @@
 					</div>
 				</form>
 
-				
+
 			</div>
 		</div>
-		
-		
+
+
 		<form action="admin" method="get">
-					<div class="form-group row mt-4">
-						<div class="col text-center">
-							<button type="submit" name="admin-function"
-								value="" class="btn btn-danger">Cancel</button>
-						</div>
-					</div>
-				</form>
+			<div class="form-group row mt-4">
+				<div class="col text-center">
+					<button type="submit" name="admin-function" value=""
+						class="btn btn-danger">Cancel</button>
+				</div>
+			</div>
+		</form>
 	</div>
 
 

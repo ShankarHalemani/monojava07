@@ -26,14 +26,18 @@
 			<form action="admin" method="get">
 				<nav class="navbar navbar-expand-lg bg-body-tertiary px-5">
 					<div class="container-fluid">
-						<input type="submit" name="admin-function"
-							value="Add New Customer" class="navbar-brand nav-link col-3" />
-						<input type="submit" name="admin-function"
-							value="Add Bank Account" class="navbar-brand nav-link col-5" />
-						<input type="submit" name="admin-function" value="View Customers"
-							class="navbar-brand nav-link col-5" /> <input type="submit"
-							name="admin-function" value="View Transactions"
-							class="navbar-brand nav-link col-5" />
+
+						<button type="submit" name="admin-function"
+							value="add-new-customer" class="navbar-brand nav-link col-3 me-3">Add
+							New Customer</button>
+						<button type="submit" name="admin-function"
+							value="add-bank-account" class="navbar-brand nav-link col-5 me-3">Add
+							Bank Account</button>
+						<button type="submit" name="admin-function" value="view-customers"
+							class="navbar-brand nav-link col-5 me-3">View Customers</button>
+						<button type="submit" name="admin-function"
+							value="view-transactions" class="navbar-brand nav-link col-5 me-3">View
+							Transactions</button>
 					</div>
 				</nav>
 			</form>
@@ -47,7 +51,7 @@
 		<form action="logout" method="get">
 			<div class="form-group row mt-4">
 				<div class="col text-center">
-					<button type="submit" class="btn btn-primary">Logout</button>
+					<button type="submit" class="btn btn-warning">Logout</button>
 				</div>
 			</div>
 		</form>

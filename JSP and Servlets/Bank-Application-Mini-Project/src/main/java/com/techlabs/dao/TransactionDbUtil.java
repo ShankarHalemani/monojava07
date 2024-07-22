@@ -1,6 +1,7 @@
 package com.techlabs.dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,12 +22,16 @@ public class TransactionDbUtil {
 	}
 
 	public List<Transaction> getAllTransactions() {
+		Connection connection = null;
+		Statement statement = null;
+		ResultSet resultSet = null;
+
 		List<Transaction> transactions = new ArrayList<Transaction>();
 		try {
-			Connection connection = dataSource.getConnection();
+			connection = dataSource.getConnection();
 			String selectQuery = "SELECT * FROM transactions";
-			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery(selectQuery);
+			statement = connection.createStatement();
+			resultSet = statement.executeQuery(selectQuery);
 
 			while (resultSet.next()) {
 				int transactionId = resultSet.getInt("tnumber");
@@ -44,14 +49,21 @@ public class TransactionDbUtil {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			closeConnection(connection, statement, resultSet);
 		}
+
 		return transactions;
 	}
 
 	public List<Transaction> getUserTransactions(String emailId) {
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+
 		List<Transaction> transactions = new ArrayList<Transaction>();
 		try {
-			Connection connection = dataSource.getConnection();
+			connection = dataSource.getConnection();
 			String selectQuery = "SELECT " + "t.tnumber, " + "t.sender_account_number, " + "t.receiver_account_number, "
 					+ "t.transaction_type, " + "t.transaction_amount, " + "t.date_of_transaction "
 					+ "FROM transactions t "
@@ -61,10 +73,10 @@ public class TransactionDbUtil {
 					+ "JOIN customer c_receiver ON c_receiver.custid = a_receiver.custid "
 					+ "WHERE c_sender.email = ? OR c_receiver.email = ?";
 
-			PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement = connection.prepareStatement(selectQuery);
 			preparedStatement.setString(1, emailId);
 			preparedStatement.setString(2, emailId);
-			ResultSet resultSet = preparedStatement.executeQuery();
+			resultSet = preparedStatement.executeQuery();
 
 			while (resultSet.next()) {
 				int transactionId = resultSet.getInt("tnumber");
@@ -80,36 +92,48 @@ public class TransactionDbUtil {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			closeConnection(connection, preparedStatement, resultSet);
 		}
+
 		return transactions;
 	}
 
 	public int getUserAccount(String emailId) {
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
 		int accountNumber = 0;
 		try {
-			Connection connection = dataSource.getConnection();
+			connection = dataSource.getConnection();
 			String selectQuery = "SELECT A.account_number FROM accounts A JOIN customer C ON A.custid=C.custid WHERE email=?";
-			PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement = connection.prepareStatement(selectQuery);
 			preparedStatement.setString(1, emailId);
-			ResultSet resultSet = preparedStatement.executeQuery();
+			resultSet = preparedStatement.executeQuery();
 			while (resultSet.next()) {
 				accountNumber = resultSet.getInt("account_number");
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			closeConnection(connection, preparedStatement, resultSet);
 		}
 
 		return accountNumber;
 	}
 
 	public boolean checkSameAccountTransfer(String emailId, int receiverAccount) {
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+
 		int accountNumber = 0;
 		try {
-			Connection connection = dataSource.getConnection();
+			connection = dataSource.getConnection();
 			String selectQuery = "SELECT A.account_number FROM accounts A JOIN customer C ON A.custid=C.custid WHERE email=?";
-			PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement = connection.prepareStatement(selectQuery);
 			preparedStatement.setString(1, emailId);
-			ResultSet resultSet = preparedStatement.executeQuery();
+			resultSet = preparedStatement.executeQuery();
 
 			while (resultSet.next()) {
 				accountNumber = resultSet.getInt("account_number");
@@ -118,35 +142,46 @@ public class TransactionDbUtil {
 			return accountNumber == receiverAccount;
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			closeConnection(connection, preparedStatement, resultSet);
 		}
 		return false;
 	}
 
 	public boolean checkAccountExists(int receiverAccount) {
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+
 		try {
-			Connection connection = dataSource.getConnection();
+			connection = dataSource.getConnection();
 			String selectQuery = "SELECT * FROM accounts WHERE account_number=?";
-			PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement = connection.prepareStatement(selectQuery);
 			preparedStatement.setInt(1, receiverAccount);
-			ResultSet resultSet = preparedStatement.executeQuery();
+			resultSet = preparedStatement.executeQuery();
 
 			return resultSet.next();
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			closeConnection(connection, preparedStatement, resultSet);
 		}
 		return false;
 	}
 
 	public boolean checkSufficientBalance(String emailId, double transferAmount) {
 		double customerBalance = 0;
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
 
 		try {
-			Connection connection = dataSource.getConnection();
+			connection = dataSource.getConnection();
 			String selectQuery = "SELECT A.account_number, A.balance FROM customer C JOIN accounts A ON C.custid=A.custid WHERE C.email = ?";
-			PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement = connection.prepareStatement(selectQuery);
 			preparedStatement.setString(1, emailId);
-			ResultSet resultSet = preparedStatement.executeQuery();
+			resultSet = preparedStatement.executeQuery();
 
 			if (resultSet.next()) {
 				customerBalance = resultSet.getDouble("balance");
@@ -156,6 +191,8 @@ public class TransactionDbUtil {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+		} finally {
+			closeConnection(connection, preparedStatement, resultSet);
 		}
 		return false;
 	}
@@ -242,6 +279,134 @@ public class TransactionDbUtil {
 				}
 			}
 		}
+	}
+
+	public List<Transaction> searchTransactionDateWise(Date startDate, Date endDate) {
+		List<Transaction> transactions = new ArrayList<Transaction>();
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		try {
+			connection = dataSource.getConnection();
+			String selectQuery = "SELECT * FROM transactions WHERE DATE(date_of_transaction) BETWEEN ? AND ?";
+			preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement.setDate(1, startDate);
+			preparedStatement.setDate(2, endDate);
+			resultSet = preparedStatement.executeQuery();
+
+			while (resultSet.next()) {
+				int transactionId = resultSet.getInt("tnumber");
+				int senderAccountNumber = resultSet.getInt("sender_account_number");
+				int receiverAccountNumber = resultSet.getInt("receiver_account_number");
+				Timestamp dateOfTransaction = resultSet.getTimestamp("date_of_transaction");
+				System.out.println(dateOfTransaction);
+				String transactionType = resultSet.getString("transaction_type");
+				double transactionAmount = resultSet.getDouble("transaction_amount");
+				Transaction transaction = new Transaction(transactionId, senderAccountNumber, receiverAccountNumber,
+						dateOfTransaction, transactionType, transactionAmount);
+				transactions.add(transaction);
+
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeConnection(connection, preparedStatement, resultSet);
+		}
+
+		return transactions;
+	}
+
+	public List<Transaction> searchTransactionAccountWise(int accountNumber) {
+		List<Transaction> transactions = new ArrayList<Transaction>();
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		try {
+			connection = dataSource.getConnection();
+			String selectQuery = "SELECT * FROM transactions WHERE sender_account_number=? OR receiver_account_number=?";
+			preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement.setInt(1, accountNumber);
+			preparedStatement.setInt(2, accountNumber);
+
+			resultSet = preparedStatement.executeQuery();
+
+			while (resultSet.next()) {
+				int transactionId = resultSet.getInt("tnumber");
+				int senderAccountNumber = resultSet.getInt("sender_account_number");
+				int receiverAccountNumber = resultSet.getInt("receiver_account_number");
+				Timestamp dateOfTransaction = resultSet.getTimestamp("date_of_transaction");
+				String transactionType = resultSet.getString("transaction_type");
+				double transactionAmount = resultSet.getDouble("transaction_amount");
+				Transaction transaction = new Transaction(transactionId, senderAccountNumber, receiverAccountNumber,
+						dateOfTransaction, transactionType, transactionAmount);
+				transactions.add(transaction);
+
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeConnection(connection, preparedStatement, resultSet);
+		}
+
+		return transactions;
+	}
+
+	public List<Transaction> searchtransactionAccountDateWise(Date startDate, Date endDate, int ccountNumber) {
+		List<Transaction> transactions = new ArrayList<Transaction>();
+		Connection connection = null;
+		PreparedStatement preparedStatement = null;
+		ResultSet resultSet = null;
+		try {
+			connection = dataSource.getConnection();
+			String selectQuery = "SELECT * FROM transactions WHERE (sender_account_number = ? OR receiver_account_number = ?) AND DATE(date_of_transaction) BETWEEN ? AND ?";
+
+			preparedStatement = connection.prepareStatement(selectQuery);
+			preparedStatement.setInt(1, ccountNumber);
+			preparedStatement.setInt(2, ccountNumber);
+			preparedStatement.setDate(3, startDate);
+			preparedStatement.setDate(4, endDate);
+			resultSet = preparedStatement.executeQuery();
+
+			while (resultSet.next()) {
+				int transactionId = resultSet.getInt("tnumber");
+				int senderAccountNumber = resultSet.getInt("sender_account_number");
+				int receiverAccountNumber = resultSet.getInt("receiver_account_number");
+				Timestamp dateOfTransaction = resultSet.getTimestamp("date_of_transaction");
+				String transactionType = resultSet.getString("transaction_type");
+				double transactionAmount = resultSet.getDouble("transaction_amount");
+				Transaction transaction = new Transaction(transactionId, senderAccountNumber, receiverAccountNumber,
+						dateOfTransaction, transactionType, transactionAmount);
+				transactions.add(transaction);
+
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeConnection(connection, preparedStatement, resultSet);
+		}
+
+		return transactions;
+	}
+
+	private void closeConnection(Connection connection, Statement statement, ResultSet resultSet) {
+
+		try {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+
+			if (statement != null) {
+				statement.close();
+			}
+
+			if (connection != null) {
+				connection.close();
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 }

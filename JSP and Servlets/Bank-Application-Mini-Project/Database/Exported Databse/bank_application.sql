@@ -45,6 +45,30 @@ INSERT INTO `accounts` VALUES (50000,10000,100000.00),(50001,10001,2000.00),(500
 UNLOCK TABLES;
 
 --
+-- Table structure for table `admininstator`
+--
+
+DROP TABLE IF EXISTS `admininstator`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `admininstator` (
+  `admin_email` varchar(100) NOT NULL,
+  `admin_password` varchar(100) NOT NULL,
+  PRIMARY KEY (`admin_email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `admininstator`
+--
+
+LOCK TABLES `admininstator` WRITE;
+/*!40000 ALTER TABLE `admininstator` DISABLE KEYS */;
+INSERT INTO `admininstator` VALUES ('admin@gmail.com','admin123'),('hero@gmail.com','hero@123');
+/*!40000 ALTER TABLE `admininstator` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `customer`
 --
 
@@ -113,4 +137,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-07-21 16:37:39
+-- Dump completed on 2024-07-22 21:41:26

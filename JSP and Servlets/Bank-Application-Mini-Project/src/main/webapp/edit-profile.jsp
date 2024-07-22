@@ -11,13 +11,21 @@
 </head>
 <body>
 	<div class="container mt-3">
-		<div class="row justify-content-center">
-			<div class="col-12">
-				<div class="p-4 border bg-secondary text-center">
-					<h1>Edit Profile</h1>
+		<nav class="navbar bg-secondary mt-3 border rounded">
+			<div
+				class="container-fluid d-flex justify-content-between align-items-center">
+				<div class="d-flex flex-grow-1 justify-content-center p-4">
+					<h1 class="mb-0">Edit Profile</h1>
 				</div>
+				<form action="logout" method="get" class="mb-0">
+					<div class="form-group row">
+						<div class="col text-end">
+							<button type="submit" class="btn btn-outline-light">Logout</button>
+						</div>
+					</div>
+				</form>
 			</div>
-		</div>
+		</nav>
 
 		<c:if test="${not empty message}">
 			<div

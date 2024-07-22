@@ -13,13 +13,16 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
+import com.techlabs.dao.CustomerDbUtil;
 import com.techlabs.dao.TransactionDbUtil;
+import com.techlabs.model.Customer;
 import com.techlabs.model.Transaction;
 
 @WebServlet("/user")
 public class UserController extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private TransactionDbUtil transactionDbUtil;
+	private CustomerDbUtil customerDbUtil;
 
 	@Resource(name = "jdbc/bank_application")
 	private DataSource dataSource;
@@ -28,6 +31,7 @@ public class UserController extends HttpServlet {
 	public void init() throws ServletException {
 		super.init();
 		transactionDbUtil = new TransactionDbUtil(dataSource);
+		customerDbUtil = new CustomerDbUtil(dataSource);
 	}
 
 	@Override
@@ -42,17 +46,17 @@ public class UserController extends HttpServlet {
 
 		switch (command) {
 
-		case "Passbook": {
+		case "passbook": {
 			viewPassbook(request, response);
 			break;
 		}
 
-		case "New Transaction": {
+		case "new-transaction": {
 			newTransaction(request, response);
 			break;
 		}
 
-		case "Edit Profile": {
+		case "edit-profile": {
 			editProfile(request, response);
 			break;
 		}
@@ -65,6 +69,10 @@ public class UserController extends HttpServlet {
 	private void customerHome(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		System.out.println("Inside customerHome doGet method");
+		HttpSession httpSession = request.getSession();
+		String emailId = (String) httpSession.getAttribute("emailId");
+		List<Customer> customers = customerDbUtil.getcurrentCustomerbyEmail(emailId);
+		request.setAttribute("currentCustomer", customers);
 		RequestDispatcher requestDispatcher = request.getRequestDispatcher("customer-home.jsp");
 		requestDispatcher.forward(request, response);
 

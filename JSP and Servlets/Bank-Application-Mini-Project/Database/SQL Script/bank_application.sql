@@ -4,6 +4,17 @@ USE bank_application;
 DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS accounts;
 DROP TABLE IF EXISTS customer;
+DROP TABLE IF EXISTS admininstator;
+
+CREATE TABLE admininstator(
+admin_email VARCHAR(100) PRIMARY KEY,
+admin_password VARCHAR(100) NOT NULL
+);
+
+INSERT INTO admininstator (admin_email, admin_password) VALUES
+('admin@gmail.com', 'admin123'),
+('hero@gmail.com','hero@123');
+
 
 CREATE TABLE customer
 (
