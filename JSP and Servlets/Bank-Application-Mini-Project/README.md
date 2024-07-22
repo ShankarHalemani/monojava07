@@ -37,6 +37,11 @@ This is a Java-based MVC (Model-View-Controller) application for managing bankin
 3. Create the required tables by executing the following SQL commands:
 
     ```sql
+    CREATE TABLE admininstator(
+    admin_email VARCHAR(100) PRIMARY KEY,
+    admin_password VARCHAR(100) NOT NULL
+    );
+
     CREATE TABLE customer (
         custid INT AUTO_INCREMENT PRIMARY KEY,
         fname VARCHAR(50),
