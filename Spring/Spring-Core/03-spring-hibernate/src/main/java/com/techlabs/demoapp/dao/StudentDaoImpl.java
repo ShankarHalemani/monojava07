@@ -79,6 +79,7 @@ public class StudentDaoImpl implements StudentDao{
     public void updateStudentWthoutMerge(Student student) {
         Student student1 = entityManager.find(Student.class, student.getStudentId());
         if(student1!=null){
+//            Native query
             Query query = entityManager.createQuery("UPDATE Student s SET s.firstName=?1, s" +
                             ".lastName=?2, s.emailId=?3 WHERE s.studentId=?4");
             query.setParameter(1,student.getFirstName());
@@ -96,7 +97,7 @@ public class StudentDaoImpl implements StudentDao{
     public void deleteStudentIdLessThan(int id) {
         Student student1 = entityManager.find(Student.class, id);
         if(student1!=null){
-            Query query = entityManager.createQuery("DELETE FROm Student s WHERE s.studentId < ?1");
+            Query query = entityManager.createQuery("DELETE FROM Student s WHERE s.studentId < ?1");
             query.setParameter(1,id);
             int result = query.executeUpdate();
             System.out.println(result);
