@@ -75,7 +75,6 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public void deleteEmployee(int employeeId) {
         Employee employee = eRepository.findById(employeeId).orElse(null);
-        ;
         if (employee == null) {
             throw new EmployeeNotFoundException("Employee with EID : " + employeeId + " not found");
         }
