@@ -1,28 +1,38 @@
 package com.techlabs.app.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "employees")
 public class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Column(name = "emp_id")
     private int employeeId;
 
+    @NotBlank(message = "Name is mandatory")
+    @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
     @Column(name = "emp_name")
     private String eName;
 
+    @NotBlank(message = "Email is mandatory")
+    @Email(message = "Email should be valid")
     @Column(name = "emp_email")
     private String eEmail;
 
+    @NotBlank(message = "Designation is mandatory")
     @Column(name = "emp_design")
     private String eDesignation;
 
+    @NotNull(message = "Salary is mandatory")
     @Column(name = "emp_salary")
     private double eSalary;
 
+    @NotNull(message = "Active status is mandatory")
     @Column(name = "emp_active")
     private boolean eActive;
 

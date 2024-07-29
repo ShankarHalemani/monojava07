@@ -1,8 +1,9 @@
 package com.techlabs.app.controller;
 
-import com.techlabs.app.entity.Employee;
-import com.techlabs.app.exception.EmployeeNotFoundException;
+import com.techlabs.app.dto.EmployeeRequestDTO;
+import com.techlabs.app.dto.EmployeeResponseDTO;
 import com.techlabs.app.service.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,50 +13,96 @@ import java.util.List;
 @RestController
 public class EmployeeController {
     private EmployeeService employeeService;
-//Constructor injector
+
+    //Constructor injector
     public EmployeeController(EmployeeService employeeService) {
         this.employeeService = employeeService;
     }
 
     @GetMapping("/employees")
-    public ResponseEntity<List<Employee>> getAllEmployees(){
-        List<Employee> employeeList = employeeService.getAllEmployees();
-        return new ResponseEntity<>(employeeList, HttpStatus.OK);
+    public ResponseEntity<List<EmployeeResponseDTO>> getAllEmployees() {
+        List<EmployeeResponseDTO> responseDTOList = employeeService.getAllEmployees();
+        return new ResponseEntity<>(responseDTOList, HttpStatus.OK);
     }
 
     @GetMapping("/employees/{eid}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable(name = "eid") int employeeId){
-        Employee employee = employeeService.getEmployeeById(employeeId);
-        if(employee==null){
-            throw new EmployeeNotFoundException("Employee with EID : "+employeeId+" not found");
-        }
-        return new ResponseEntity<>(employee,HttpStatus.OK);
+    public ResponseEntity<EmployeeResponseDTO> getEmployeeById(@PathVariable(name = "eid") int employeeId) {
+        EmployeeResponseDTO responseDTO = employeeService.getEmployeeById(employeeId);
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
     @PostMapping("/employees")
-    public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee){
-        employee.setEmployeeId(0);
-        Employee employee1 = employeeService.updateEmployee(employee);
-        return new ResponseEntity<>(employee1,HttpStatus.CREATED);
+    public ResponseEntity<EmployeeResponseDTO> addEmployee(@Valid @RequestBody EmployeeRequestDTO requestDTO) {
+        requestDTO.setId(0);
+        EmployeeResponseDTO responseDTO = employeeService.updateEmployee(requestDTO);
+        return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
     @PutMapping("/employees")
-    public ResponseEntity<Employee> updateEmployee(@RequestBody Employee employee){
-        Employee tempEmployee = employeeService.getEmployeeById(employee.getEmployeeId());
-        if(tempEmployee ==null){
-            throw new EmployeeNotFoundException("Employee with EID : "+employee.getEmployeeId()+" not found");
-        }
-        Employee employee1 = employeeService.updateEmployee(employee);
-        return new ResponseEntity<>(employee1,HttpStatus.OK);
+    public ResponseEntity<EmployeeResponseDTO> updateEmployee(@Valid @RequestBody EmployeeRequestDTO requestDTO) {
+        EmployeeResponseDTO responseDTO = employeeService.updateEmployee(requestDTO);
+        return new ResponseEntity<>(responseDTO, HttpStatus.OK);
     }
 
     @DeleteMapping("/employees/{eid}")
-    public ResponseEntity<HttpStatus> deleteEmployee(@PathVariable(name = "eid") int employeeId){
-        Employee employee = employeeService.getEmployeeById(employeeId);
-        if(employee==null){
-            throw new EmployeeNotFoundException("Employee with EID : "+employeeId+" not found");
-        }
-        employeeService.deleteEmployee(employee);
+    public ResponseEntity<HttpStatus> deleteEmployee(@PathVariable(name = "eid") int employeeId) {
+        employeeService.deleteEmployee(employeeId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @GetMapping("/employees/name/{name}")
+    public ResponseEntity<List<EmployeeResponseDTO>> getEmployeesByName(@PathVariable(name = "name") String empName) {
+        List<EmployeeResponseDTO> responseDTOList = employeeService.getEmployeesByName(empName);
+        return new ResponseEntity<>(responseDTOList, HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/email/{email}")
+    public ResponseEntity<List<EmployeeResponseDTO>> getEmployeesByEmail(@PathVariable(name = "email") String empEmail) {
+        List<EmployeeResponseDTO> responseDTOList = employeeService.getEmployeesByEmail(empEmail);
+        return new ResponseEntity<>(responseDTOList, HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/active/{active}")
+    public ResponseEntity<List<EmployeeResponseDTO>> getActiveEmployees(@PathVariable(name = "active") boolean isActive) {
+        List<EmployeeResponseDTO> responseDTOList = employeeService.getAllActiveEmployees(isActive);
+
+        return new ResponseEntity<>(responseDTOList, HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/charName/{charName}")
+    public ResponseEntity<List<EmployeeResponseDTO>> getAllEmployeesStartingWithChar(@PathVariable(name = "charName") String charName) {
+        List<EmployeeResponseDTO> responseDTOList = employeeService.getEmployeesStartingWithChar(charName);
+        return new ResponseEntity<>(responseDTOList, HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/salary/{salary}/designation/{designation}")
+    public ResponseEntity<List<EmployeeResponseDTO>> getEmployeesWithSalaryAndDesignation(@PathVariable(name = "salary") double salary, @PathVariable(name = "designation") String designation) {
+        List<EmployeeResponseDTO> responseDTOList = employeeService.getEmployeesWithSalaryAndDesignation(salary, designation);
+        return new ResponseEntity<>(responseDTOList, HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/salary/{startSalary}-{endSalary}")
+    public ResponseEntity<List<EmployeeResponseDTO>> getEmployeesWithSalaryRange(@PathVariable(name = "startSalary") double startSalary, @PathVariable(name = "endSalary") double endSalary) {
+        List<EmployeeResponseDTO> responseDTOList = employeeService.getEmployeesWithSalaryRange(startSalary, endSalary);
+        return new ResponseEntity<>(responseDTOList, HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/active/{isActive}/salary/{salary}")
+    public ResponseEntity<List<EmployeeResponseDTO>> getEmployeesActiveAndSalary(@PathVariable(name = "isActive") boolean isActive, @PathVariable(name = "salary") double salary) {
+        List<EmployeeResponseDTO> responseDTOList = employeeService.getEmployeesActiveAndSalary(isActive, salary);
+        return new ResponseEntity<>(responseDTOList, HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/cactive/{isActive}")
+    public ResponseEntity<Integer> getCountEmployeesActive(@PathVariable(name = "isActive") boolean isActive) {
+        int employeeCount = employeeService.getCountEmployeesActive(isActive);
+        return new ResponseEntity<>(employeeCount, HttpStatus.OK);
+    }
+
+    @GetMapping("/employees/cdesignation/{designation}")
+    public ResponseEntity<Integer> getCountEmployeesDesignation(@PathVariable(name = "designation") String designation) {
+        int employeeCount = employeeService.getCountEmployeesDesignation(designation);
+        return new ResponseEntity<>(employeeCount, HttpStatus.OK);
+    }
+
 }
