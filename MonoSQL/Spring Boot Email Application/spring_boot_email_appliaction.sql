@@ -1,0 +1,2 @@
+CREATE DATABASE spring_boot_email_application;
+USE spring_boot_email_application;
