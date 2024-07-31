@@ -3,6 +3,7 @@ package com.techlabs.app.controller;
 import com.techlabs.app.dto.EmployeeRequestDTO;
 import com.techlabs.app.dto.EmployeeResponseDTO;
 import com.techlabs.app.service.EmployeeService;
+import com.techlabs.app.util.PagedResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,17 @@ public class EmployeeController {
     }
 
     @GetMapping("/employees")
-    public ResponseEntity<List<EmployeeResponseDTO>> getAllEmployees() {
-        List<EmployeeResponseDTO> responseDTOList = employeeService.getAllEmployees();
-        return new ResponseEntity<>(responseDTOList, HttpStatus.OK);
+    public ResponseEntity<PagedResponse<EmployeeResponseDTO>> getAllEmployees(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "5") int size,
+            @RequestParam(defaultValue = "employeeId") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+        System.out.println(page);
+        System.out.println(size);
+
+        PagedResponse<EmployeeResponseDTO> pagedResponseDTOList = employeeService.getAllEmployees(page, size, sortBy, direction);
+        return new ResponseEntity<>(pagedResponseDTOList, HttpStatus.OK);
     }
 
     @GetMapping("/employees/{eid}")

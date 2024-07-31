@@ -5,6 +5,11 @@ import com.techlabs.app.dto.EmployeeResponseDTO;
 import com.techlabs.app.entity.Employee;
 import com.techlabs.app.exception.EmployeeNotFoundException;
 import com.techlabs.app.repository.EmployeeRepository;
+import com.techlabs.app.util.PagedResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -49,9 +54,14 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public List<EmployeeResponseDTO> getAllEmployees() {
-        List<Employee> employees = eRepository.findAll();
-        return getResponseList(employees);
+    public PagedResponse<EmployeeResponseDTO> getAllEmployees(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.DESC.name()) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Employee> employeePage = eRepository.findAll(pageable);
+        List<Employee> employees = employeePage.getContent();
+        List<EmployeeResponseDTO> responseList = getResponseList(employees);
+        return new PagedResponse<>(responseList, employeePage.getNumber(), employeePage.getSize(),
+                employeePage.getTotalElements(), employeePage.getTotalPages(), employeePage.isLast());
     }
 
     @Override

@@ -2,11 +2,12 @@ package com.techlabs.app.service;
 
 import com.techlabs.app.dto.EmployeeRequestDTO;
 import com.techlabs.app.dto.EmployeeResponseDTO;
+import com.techlabs.app.util.PagedResponse;
 
 import java.util.List;
 
 public interface EmployeeService {
-    List<EmployeeResponseDTO> getAllEmployees();
+    PagedResponse<EmployeeResponseDTO> getAllEmployees(int page, int size, String sortBy, String direction);
 
     EmployeeResponseDTO getEmployeeById(int employeeId);
 

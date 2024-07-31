@@ -23,16 +23,6 @@ public class EmployeeExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler
-    public ResponseEntity<EmployeeErrorResponse> handleException(Exception e) {
-        EmployeeErrorResponse error = new EmployeeErrorResponse();
-        error.setStatus(HttpStatus.NOT_FOUND.value());
-        error.setMessage(e.getMessage());
-        error.setTimestamp(LocalDateTime.now());
-
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
-    }
-
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
         Map<String, String> errorDetails = new HashMap<>();
@@ -50,7 +40,7 @@ public class EmployeeExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleGlobalException(Exception ex, WebRequest request) {
-        System.out.println(ex.getClass().getSimpleName() + "Hello");
+        System.out.println(ex.getClass().getSimpleName());
         Map<String, String> errorDetails = new HashMap<>();
         errorDetails.put("message", ex.getMessage());
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
