@@ -94,6 +94,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeResponseDTO> getEmployeesByName(String empName) {
         List<Employee> employees = eRepository.findByENameLike(empName);
+//        List<Employee> employees = eRepository.getByName(empName);
+//        List<Employee> employees = eRepository.findByNameNative(empName);
         if (employees == null || employees.isEmpty()) {
             throw new EmployeeNotFoundException("There are no employees with name : " + empName);
         }
@@ -103,6 +105,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeResponseDTO> getEmployeesByEmail(String empEmail) {
         List<Employee> employees = eRepository.findByEEmail(empEmail);
+//        List<Employee> employees = eRepository.getByEmail(empEmail);
+//        List<Employee> employees = eRepository.findByEmailNative(empEmail);
         if (employees == null || employees.isEmpty()) {
             throw new EmployeeNotFoundException("There are no employees with email : " + empEmail);
         }
@@ -112,6 +116,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeResponseDTO> getAllActiveEmployees(boolean isActive) {
         List<Employee> employeeList = eRepository.findByEActive(isActive);
+//        List<Employee> employeeList = eRepository.getByActive(isActive);
+//        List<Employee> employeeList = eRepository.findByActiveNative(isActive);
         if (employeeList == null || employeeList.isEmpty()) {
             throw new EmployeeNotFoundException("There are no employees which are active right now");
         }
@@ -121,6 +127,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeResponseDTO> getEmployeesStartingWithChar(String charName) {
         List<Employee> employeeList = eRepository.findByENameStartingWith(charName);
+//        List<Employee> employeeList = eRepository.getNameStartingWith(charName);
+//        List<Employee> employeeList = eRepository.findNameStartingWithNative(charName);
         if (employeeList == null || employeeList.isEmpty()) {
             throw new EmployeeNotFoundException("There are no employees whose name starts with : " + charName);
         }
@@ -130,6 +138,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeResponseDTO> getEmployeesWithSalaryAndDesignation(double salary, String designation) {
         List<Employee> employeeList = eRepository.findByESalaryGreaterThanAndEDesignationLike(salary, designation);
+//        List<Employee> employeeList = eRepository.getEmployeeWithSalaryGreaterThanAndDesignation(salary, designation);
+//        List<Employee> employeeList = eRepository.findEmployeesBySalaryGreaterThanAndDesignationNative(salary, designation);
         if (employeeList == null || employeeList.isEmpty()) {
             throw new EmployeeNotFoundException("There are no employees with salary greater than : " + salary + " whose " +
                     "designation is : " + designation);
@@ -140,6 +150,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeResponseDTO> getEmployeesWithSalaryRange(double startSalary, double endSalary) {
         List<Employee> employeeList = eRepository.findByESalaryBetween(startSalary, endSalary);
+//        List<Employee> employeeList = eRepository.getEmployeeBySalaryBetween(startSalary, endSalary);
+//        List<Employee> employeeList = eRepository.findEmployeesBySalaryBetweenNative(startSalary, endSalary);
         if (employeeList == null || employeeList.isEmpty()) {
             throw new EmployeeNotFoundException("There are no employees with salary range " + startSalary + " and " + endSalary);
         }
@@ -149,6 +161,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeResponseDTO> getEmployeesActiveAndSalary(boolean isActive, double salary) {
         List<Employee> employeeList = eRepository.findByEActiveAndESalary(isActive, salary);
+//        List<Employee> employeeList = eRepository.getEmployeeByActiveAndSalary(isActive, salary);
+//        List<Employee> employeeList = eRepository.findEmployeesByActiveAndSalaryNative(isActive, salary);
         if (employeeList == null || employeeList.isEmpty()) {
             throw new EmployeeNotFoundException("There are no employees with salary : " + salary + " and are active");
         }
@@ -158,6 +172,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public int getCountEmployeesActive(boolean isActive) {
         int employeeCount = eRepository.countByEActive(isActive);
+//        int employeeCount = eRepository.countEmployeesByActive(isActive);
+//        int employeeCount = eRepository.countEmployeesByActiveNative(isActive);
         if (employeeCount == 0) {
             throw new EmployeeNotFoundException("There are no employees who are active");
         }
@@ -167,6 +183,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public int getCountEmployeesDesignation(String designation) {
         int employeeCount = eRepository.countByEDesignationLike(designation);
+//        int employeeCount = eRepository.countEmployeesByDesignation(designation);
+//        int employeeCount = eRepository.countEmployeesByDesignationNative(designation);
         if (employeeCount == 0) {
             throw new EmployeeNotFoundException("There are no employees who are : " + designation);
         }

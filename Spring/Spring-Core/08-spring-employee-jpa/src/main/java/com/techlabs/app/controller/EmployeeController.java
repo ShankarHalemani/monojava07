@@ -27,9 +27,6 @@ public class EmployeeController {
             @RequestParam(defaultValue = "employeeId") String sortBy,
             @RequestParam(defaultValue = "asc") String direction
     ) {
-        System.out.println(page);
-        System.out.println(size);
-
         PagedResponse<EmployeeResponseDTO> pagedResponseDTOList = employeeService.getAllEmployees(page, size, sortBy, direction);
         return new ResponseEntity<>(pagedResponseDTOList, HttpStatus.OK);
     }
