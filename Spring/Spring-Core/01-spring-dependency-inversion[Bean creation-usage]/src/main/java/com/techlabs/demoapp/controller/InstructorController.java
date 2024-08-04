@@ -11,7 +11,6 @@ public class InstructorController {
 //    field injector
     @Autowired
     @Qualifier(value="pythonInstructor")
-
     private Instructor instructor;
 
 //    public InstructorController(@Qualifier(value="pythonInstructor") Instructor instructor) {
@@ -20,7 +19,6 @@ public class InstructorController {
 
     @GetMapping("/train")
     public String getMessage(){
-
         return this.instructor.getTrainingPlan()+"<br>"+this.instructor.getResource();
     }
 

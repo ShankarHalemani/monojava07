@@ -46,7 +46,8 @@ public class StudentDaoImpl implements StudentDao{
 
     @Override
     public List<Student> getStudentByFirstNameAndLastName(String firstName, String lastName) {
-        TypedQuery<Student> query = entityManager.createQuery("SELECT s FROm Student s WHERE firstName=?1 AND lastName=?2", Student.class);
+        TypedQuery<Student> query = entityManager.createQuery("SELECT s FROM Student s WHERE firstName=?1 AND " +
+                "lastName=?2", Student.class);
         query.setParameter(1,firstName);
         query.setParameter(2,lastName);
         return query.getResultList();
@@ -76,7 +77,7 @@ public class StudentDaoImpl implements StudentDao{
 
     @Override
     @Transactional
-    public void updateStudentWthoutMerge(Student student) {
+    public void updateStudentWithoutMerge(Student student) {
         Student student1 = entityManager.find(Student.class, student.getStudentId());
         if(student1!=null){
 //            Native query

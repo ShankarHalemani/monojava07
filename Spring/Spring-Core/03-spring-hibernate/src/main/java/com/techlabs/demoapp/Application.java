@@ -42,7 +42,7 @@ public class Application implements CommandLineRunner {
 
 	private void updateStudentWithoutMerge() {
 		Student student = new Student(2, "Satyansh","Narayana","sattu@gmail.com");
-		studentDao.updateStudentWthoutMerge(student);
+		studentDao.updateStudentWithoutMerge(student);
 	}
 
 	private void deleteStudent() {

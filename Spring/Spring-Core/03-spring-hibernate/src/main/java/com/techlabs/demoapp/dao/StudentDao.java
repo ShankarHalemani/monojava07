@@ -20,8 +20,7 @@ public interface StudentDao {
 
     void deleteStudent(int id);
 
-
-    void updateStudentWthoutMerge(Student student);
+    void updateStudentWithoutMerge(Student student);
 
     void deleteStudentIdLessThan(int i);
 }
