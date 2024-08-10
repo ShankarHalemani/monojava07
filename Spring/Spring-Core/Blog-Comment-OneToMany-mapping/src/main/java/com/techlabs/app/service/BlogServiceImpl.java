@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,8 +43,13 @@ public class BlogServiceImpl implements BlogService {
         blog.setTitle(blogRequestDTO.getTitle());
         blog.setCategory(blogRequestDTO.getCategory());
         blog.setData(blogRequestDTO.getData());
-        blog.setPublishedDate(blogRequestDTO.getPublishedDate());
-        blog.setPublished(blogRequestDTO.isPublished());
+        if(blogRequestDTO.isPublished()) {
+            blog.setPublishedDate(LocalDateTime.now());
+            blog.setPublished(blogRequestDTO.isPublished());
+        }else{
+            blog.setPublishedDate(null);
+            blog.setPublished(blogRequestDTO.isPublished());
+        }
         List<Comment> commentList = null;
         if (blogRequestDTO.getCommentDTOList() != null) {
             commentList =
@@ -181,11 +187,4 @@ public class BlogServiceImpl implements BlogService {
 
     }
 
-    @Override
-    public void deleteBlogByCommentId(int id) {
-        Comment comment = commentRepository.findById(id).orElseThrow(() ->
-                new CommentNotFoundException("Comment with Id : " + id + " not found"));
-        Blog blog = comment.getBlog();
-        blogRepository.delete(blog);
-    }
 }

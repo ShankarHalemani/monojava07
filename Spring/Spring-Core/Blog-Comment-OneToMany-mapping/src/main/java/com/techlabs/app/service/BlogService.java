@@ -26,6 +26,4 @@ public interface BlogService {
     BlogResponseDTO updateComment(CommentDTO commentDTO, int id);
 
     void deleteComment(int cid, int id);
-
-    void deleteBlogByCommentId(int id);
 }

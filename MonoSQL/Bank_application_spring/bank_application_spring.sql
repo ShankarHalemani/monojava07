@@ -1,0 +1,3 @@
+CREATE DATABASE bank_application_spring;
+USE bank_application_spring;
+DROP DATABASE bank_application_spring;

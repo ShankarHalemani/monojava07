@@ -8,4 +8,5 @@ public interface CommentService {
     Comment commentDTOToComment(CommentDTO commentDTO, Blog blog);
 
     CommentDTO commentToCommentDTO(Comment comment);
+
 }

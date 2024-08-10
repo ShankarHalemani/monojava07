@@ -36,38 +36,31 @@ public class BlogController {
     }
 
     @Operation(summary = "Get Blog by ID")
-    @GetMapping("/id/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<BlogResponseDTO> getBlogById(@Valid @PathVariable(name = "id") int id) {
         BlogResponseDTO blogResponseDTO = blogService.getBlogById(id);
         return new ResponseEntity<>(blogResponseDTO, HttpStatus.FOUND);
     }
 
     @Operation(summary = "Create a new Blog")
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<BlogResponseDTO> createNewBlog(@Valid @RequestBody BlogRequestDTO blogRequestDTO) {
         BlogResponseDTO blogResponseDTO = blogService.createNewBlog(blogRequestDTO);
         return new ResponseEntity<>(blogResponseDTO, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Update Existing blog")
-    @PutMapping("/update")
+    @PutMapping
     public ResponseEntity<BlogResponseDTO> updateBlog(@Valid @RequestBody BlogRequestDTO blogRequestDTO) {
         BlogResponseDTO blogResponseDTO = blogService.updateBlog(blogRequestDTO);
         return new ResponseEntity<>(blogResponseDTO, HttpStatus.OK);
     }
 
     @Operation(summary = "Delete Blog with blog ID")
-    @DeleteMapping("/delete/id/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Object> deleteBlog(@Valid @PathVariable(name = "id") int id) {
         blogService.deleteBlog(id);
         return ResponseEntity.status(HttpStatus.OK).body("Blog with ID : " + id + " Deleted Successfully");
-    }
-
-    @Operation(summary = "Delete Blog by comment ID")
-    @DeleteMapping("/delete/cid/{id}")
-    public ResponseEntity<Object> deleteBlogByCommentId(@Valid @PathVariable(name = "id") int id) {
-        blogService.deleteBlogByCommentId(id);
-        return ResponseEntity.status(HttpStatus.OK).body("Blog related to comment with ID : " + id + " deleted successfully");
     }
 
 }

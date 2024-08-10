@@ -8,7 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -28,8 +27,6 @@ public class BlogRequestDTO {
     @NotBlank
     private String data;
 
-    private LocalDateTime publishedDate;
-
     @NotNull
     private boolean published;
 
@@ -42,7 +39,6 @@ public class BlogRequestDTO {
                 ", title='" + title + '\'' +
                 ", category='" + category + '\'' +
                 ", data='" + data + '\'' +
-                ", publishedDate=" + publishedDate +
                 ", published=" + published +
                 ", commentDTOList=" + commentDTOList +
                 '}';
