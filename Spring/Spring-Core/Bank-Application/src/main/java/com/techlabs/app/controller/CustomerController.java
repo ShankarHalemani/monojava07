@@ -3,6 +3,7 @@ package com.techlabs.app.controller;
 import com.techlabs.app.dto.CustomerRequestDTO;
 import com.techlabs.app.dto.CustomerResponseDTO;
 import com.techlabs.app.service.CustomerService;
+import com.techlabs.app.util.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -24,10 +25,15 @@ public class CustomerController {
     private CustomerService customerService;
 
     @Operation(summary = "Get all customers")
-    @GetMapping
-    public ResponseEntity<List<CustomerResponseDTO>> getAllCustomers() {
-        logger.info("Fetching all customers");
-        List<CustomerResponseDTO> customerResponseDTOS = customerService.getAllCustomers();
+    @GetMapping()
+    public ResponseEntity<PagedResponse<CustomerResponseDTO>> getAllCustomers(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "2") int size,
+            @RequestParam(name = "sortBy", defaultValue = "customerId") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction) {
+        logger.info("Fetching All The Customers");
+        PagedResponse<CustomerResponseDTO> customerResponseDTOS = customerService.getAllCustomers(page, size, sortBy, direction);
+
         return new ResponseEntity<>(customerResponseDTOS, HttpStatus.OK);
     }
 

@@ -3,6 +3,7 @@ package com.techlabs.app.controller;
 import com.techlabs.app.dto.AccountResponseDTO;
 import com.techlabs.app.dto.TransactionResponseDTO;
 import com.techlabs.app.service.AccountService;
+import com.techlabs.app.util.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,11 +25,16 @@ public class AccountController {
     @Autowired
     private AccountService accountService;
 
-    @Operation(summary = "Get all accounts")
-    @GetMapping
-    public ResponseEntity<List<AccountResponseDTO>> getAllAccounts() {
-        logger.info("Fetching all accounts");
-        List<AccountResponseDTO> accountResponseDTOS = accountService.getAllAccounts();
+    @Operation(summary = "Get All Accounts")
+    @GetMapping()
+    public ResponseEntity<PagedResponse<AccountResponseDTO>> getAllAccounts(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "2") int size,
+            @RequestParam(name = "sortBy", defaultValue = "accountNumber") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction) {
+        logger.info("Fetching All The Accounts");
+        PagedResponse<AccountResponseDTO> accountResponseDTOS = accountService.getAllAccounts(page, size, sortBy, direction);
+
         return new ResponseEntity<>(accountResponseDTOS, HttpStatus.OK);
     }
 
@@ -122,7 +128,6 @@ public class AccountController {
                 .getAllAccountsTransactions();
         return new ResponseEntity<>(transactionResponseDTOS, HttpStatus.OK);
     }
-
 
 
 }

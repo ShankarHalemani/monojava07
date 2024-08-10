@@ -17,9 +17,14 @@ import com.techlabs.app.repository.AccountRepository;
 import com.techlabs.app.repository.BankRepository;
 import com.techlabs.app.repository.CustomerRepository;
 import com.techlabs.app.repository.TransactionRepository;
+import com.techlabs.app.util.PagedResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -49,10 +54,20 @@ public class AccountServiceImpl implements AccountService {
     private Mapper mapper;
 
     @Override
-    public List<AccountResponseDTO> getAllAccounts() {
-        logger.info("Fetching all accounts");
-        List<Account> accounts = accountRepository.findAll();
-        return mapper.getAccountResponseList(accounts);
+    public PagedResponse<AccountResponseDTO> getAllAccounts(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Account> accounts = accountRepository.findAll(pageable);
+        if (accounts.getContent().isEmpty()) {
+            logger.error("No Accounts Found");
+            throw new BankRealtedException("No Accounts Found");
+        }
+
+        List<AccountResponseDTO> accountResponseList = mapper.getAccountResponseList(accounts.getContent());
+        return new PagedResponse<AccountResponseDTO>(accountResponseList, accounts.getNumber(), accounts.getNumberOfElements(),
+                accounts.getTotalElements(), accounts.getTotalPages(), accounts.isLast());
+
     }
 
     @Override
@@ -106,8 +121,8 @@ public class AccountServiceImpl implements AccountService {
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setTo(customer.getUser().getUsername());
         emailDTO.setSubject("Regarding new Account Creation");
-        String body = "Welcome to " +bank.getFullName()+". Your account created with account number "
-                +account.getAccountNumber();
+        String body = "Welcome to " + bank.getFullName() + ". Your account created with account number "
+                + account.getAccountNumber();
         emailDTO.setBody(body);
 
         emailSender.sendMailWithAttachement(emailDTO);
@@ -141,6 +156,16 @@ public class AccountServiceImpl implements AccountService {
         customerRepository.save(customer);
         accountRepository.save(account);
 
+        Bank bank = account.getBank();
+        EmailDTO emailDTO = new EmailDTO();
+        emailDTO.setTo(customer.getUser().getUsername());
+        emailDTO.setSubject("Account Balance Updated");
+        String body = "Welcome to " + bank.getFullName() + ". Your account credited with amount "
+                + amount;
+        emailDTO.setBody(body);
+
+        emailSender.sendMailWithAttachement(emailDTO);
+
         logger.info("Account number: {} updated with new balance: {}", accountNumber, updatedBalance);
         return mapper.accountEntityToResponse(account);
     }
@@ -163,6 +188,15 @@ public class AccountServiceImpl implements AccountService {
 
         customerRepository.save(customer);
         accountRepository.save(account);
+
+        Bank bank = account.getBank();
+        EmailDTO emailDTO = new EmailDTO();
+        emailDTO.setTo(customer.getUser().getUsername());
+        emailDTO.setSubject("Account Closing Update");
+        String body = "Your account in the "+bank.getFullName()+" has been deleted successfully";
+        emailDTO.setBody(body);
+
+        emailSender.sendMailWithAttachement(emailDTO);
 
         logger.info("Account with account number: {} has been deleted", accountNumber);
     }
@@ -202,6 +236,15 @@ public class AccountServiceImpl implements AccountService {
 
         customerRepository.save(customer);
         accountRepository.save(account);
+
+
+        EmailDTO emailDTO = new EmailDTO();
+        emailDTO.setTo(customer.getUser().getUsername());
+        emailDTO.setSubject("Account Closing Update");
+        String body = "Your account in the "+bank.getFullName()+" has been activated successfully";
+        emailDTO.setBody(body);
+
+        emailSender.sendMailWithAttachement(emailDTO);
 
         logger.info("Account with account number: {} has been activated", accountNumber);
         return mapper.accountEntityToResponse(account);

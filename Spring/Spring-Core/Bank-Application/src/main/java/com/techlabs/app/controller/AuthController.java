@@ -1,9 +1,13 @@
 package com.techlabs.app.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techlabs.app.dto.JWTAuthResponse;
 import com.techlabs.app.dto.LoginDTO;
 import com.techlabs.app.dto.RegisterDTO;
 import com.techlabs.app.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +24,9 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @Operation(summary = "User login")
     @PostMapping(value = {"/login", "/signin"})
-    public ResponseEntity<JWTAuthResponse> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<JWTAuthResponse> login(@Valid @RequestBody LoginDTO loginDTO) {
         logger.info("User login with username: {}", loginDTO.getUsername());
         String token = authService.login(loginDTO);
         JWTAuthResponse jwtAuthResponse = new JWTAuthResponse();
@@ -29,10 +34,21 @@ public class AuthController {
         return ResponseEntity.ok(jwtAuthResponse);
     }
 
+    @Operation(summary = "User registration")
     @PostMapping(value = {"/register", "/signup"}, consumes = {"multipart/form-data"})
-    public ResponseEntity<String> register(@RequestPart("registerDTO") RegisterDTO registerDTO,
-                                           @RequestParam(name = "role") String tempRole,
-                                           @RequestPart("file") MultipartFile file) {
+    public ResponseEntity<String> register(
+            @RequestPart("registerDTO") String registerDTOStr,
+            @RequestParam(name = "role") String tempRole,
+            @RequestParam("file") MultipartFile file
+    ) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        RegisterDTO registerDTO;
+        try {
+            registerDTO = objectMapper.readValue(registerDTOStr, RegisterDTO.class);
+        } catch (JsonProcessingException e) {
+            return ResponseEntity.badRequest().body("Invalid JSON format for registerDTO");
+        }
+
         String role = "ROLE_" + tempRole.toUpperCase();
         logger.info("User registration with role: {}", role);
         String response = authService.register(registerDTO, role, file);

@@ -10,16 +10,21 @@ import com.techlabs.app.mapper.Mapper;
 import com.techlabs.app.repository.AccountRepository;
 import com.techlabs.app.repository.BankRepository;
 import com.techlabs.app.repository.CustomerRepository;
+import com.techlabs.app.util.PagedResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class BankServiceImpl implements BankService{
+public class BankServiceImpl implements BankService {
     private static final Logger logger = LoggerFactory.getLogger(BankServiceImpl.class);
 
     @Autowired
@@ -34,12 +39,21 @@ public class BankServiceImpl implements BankService{
     @Autowired
     private Mapper mapper;
 
-
     @Override
-    public List<BankResponseDTO> getAllBanks() {
-        logger.info("Fetching all banks");
-        List<Bank> banks = bankRepository.findAll();
-        return mapper.getBankResponseList(banks);
+    public PagedResponse<BankResponseDTO> getAllBanks(int page, int size, String sortBy, String direction) {
+
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Bank> banks = bankRepository.findAll(pageable);
+        if (banks.getContent().isEmpty()) {
+            logger.error("No Banks Found");
+            throw new BankRealtedException("No Banks Found");
+        }
+        List<BankResponseDTO> bankResponseList = mapper.getBankResponseList(banks.getContent());
+        return new PagedResponse<BankResponseDTO>(bankResponseList, banks.getNumber(), banks.getNumberOfElements(),
+                banks.getTotalElements(), banks.getTotalPages(), banks.isLast());
+
     }
 
     @Override

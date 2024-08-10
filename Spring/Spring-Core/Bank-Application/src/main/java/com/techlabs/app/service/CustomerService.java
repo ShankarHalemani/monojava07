@@ -3,11 +3,12 @@ package com.techlabs.app.service;
 import com.techlabs.app.dto.CustomerRequestDTO;
 import com.techlabs.app.dto.CustomerResponseDTO;
 import com.techlabs.app.dto.RegisterDTO;
+import com.techlabs.app.util.PagedResponse;
 
 import java.util.List;
 
 public interface CustomerService {
-    List<CustomerResponseDTO> getAllCustomers();
+    PagedResponse<CustomerResponseDTO> getAllCustomers(int page, int size, String sortBy, String direction);
 
     CustomerResponseDTO getCustomerById(long customerId);
 

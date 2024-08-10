@@ -12,9 +12,14 @@ import com.techlabs.app.repository.AccountRepository;
 import com.techlabs.app.repository.CustomerRepository;
 import com.techlabs.app.repository.RoleRepository;
 import com.techlabs.app.repository.UserRepository;
+import com.techlabs.app.util.PagedResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -46,14 +51,23 @@ public class CustomerServiceImpl implements CustomerService {
     private AccountRepository accountRepository;
 
     @Override
-    public List<CustomerResponseDTO> getAllCustomers() {
+    public PagedResponse<CustomerResponseDTO> getAllCustomers(int page, int size, String sortBy, String direction) {
         logger.info("Fetching all customers");
-        List<Customer> customers = customerRepository.findAll();
-        if (customers.isEmpty()) {
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Customer> all = customerRepository.findAll(pageable);
+
+        if (all.getContent().isEmpty()) {
             logger.warn("No customers found");
-            throw new CustomerRelatedException("No customers to be found");
+            throw new CustomerRelatedException("No Customers Found");
         }
-        return mapper.getCustomerResponseList(customers);
+
+        List<CustomerResponseDTO> customerResponseDTOS = mapper.getCustomerResponseList(all.getContent());
+
+        return new PagedResponse<CustomerResponseDTO>(customerResponseDTOS, all.getNumber(), all.getNumberOfElements(),
+                all.getTotalElements(), all.getTotalPages(), all.isLast());
+
     }
 
     @Override

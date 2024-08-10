@@ -3,6 +3,7 @@ package com.techlabs.app.controller;
 import com.techlabs.app.dto.BankRequestDTO;
 import com.techlabs.app.dto.BankResponseDTO;
 import com.techlabs.app.service.BankService;
+import com.techlabs.app.util.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -23,12 +24,17 @@ public class BankController {
     @Autowired
     private BankService bankService;
 
-    @Operation(summary = "Get all banks")
-    @GetMapping
-    public ResponseEntity<List<BankResponseDTO>> getAllBanks() {
-        logger.info("Fetching all banks");
-        List<BankResponseDTO> bankResponseDTOS = bankService.getAllBanks();
-        return new ResponseEntity<>(bankResponseDTOS, HttpStatus.OK);
+    @Operation(summary = "Fetch All Banks")
+    @GetMapping()
+    public ResponseEntity<PagedResponse<BankResponseDTO>> getAllBanks(
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "2") int size,
+            @RequestParam(name = "sortBy", defaultValue = "bankId") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction){
+        logger.info("Getting All Bank Details");
+        PagedResponse<BankResponseDTO> bankResponseDTOS= bankService.getAllBanks(page, size, sortBy, direction);
+
+        return new ResponseEntity<>(bankResponseDTOS,HttpStatus.OK);
     }
 
     @Operation(summary = "Get bank by ID")

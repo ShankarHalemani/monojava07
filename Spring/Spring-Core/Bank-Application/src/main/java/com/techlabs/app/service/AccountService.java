@@ -2,12 +2,13 @@ package com.techlabs.app.service;
 
 import com.techlabs.app.dto.AccountResponseDTO;
 import com.techlabs.app.dto.TransactionResponseDTO;
+import com.techlabs.app.util.PagedResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AccountService {
-    List<AccountResponseDTO> getAllAccounts();
+    PagedResponse<AccountResponseDTO> getAllAccounts(int page, int size, String sortBy, String direction);
 
     AccountResponseDTO getAccountByAccountNumber(long accountNumber);
 
