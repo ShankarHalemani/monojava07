@@ -6,6 +6,7 @@ import com.techlabs.app.entity.Customer;
 import com.techlabs.app.entity.Transaction;
 import com.techlabs.app.entity.User;
 import com.techlabs.app.exception.AccountRelatedException;
+import com.techlabs.app.exception.BankRealtedException;
 import com.techlabs.app.exception.UserRelatedException;
 import com.techlabs.app.mapper.Mapper;
 import com.techlabs.app.repository.AccountRepository;
@@ -19,7 +20,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -39,38 +42,33 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public List<TransactionResponseDTO> getAllAccountsTransactions() {
-
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findUserByUsername(currentUsername).orElseThrow(() -> {
-            logger.error("User with username: {} not found", currentUsername);
-            return new UserRelatedException("User with username : " + currentUsername + " not found");
-        });
+        User user = userRepository.findUserByUsername(currentUsername).orElseThrow(() ->
+                new UserRelatedException("User with username : " + currentUsername + " not found"));
 
         Customer customer = user.getCustomer();
         List<Account> accounts = customer.getAccounts();
 
-        List<Transaction> allAccountsTransactions = new ArrayList<>();
+        Set<Transaction> allAccountsTransactions = new HashSet<>();
         for (Account account : accounts) {
             allAccountsTransactions.addAll(account.getSentTransactions());
             allAccountsTransactions.addAll(account.getReceivedTransactions());
         }
 
         logger.info("Successfully fetched transactions for Customer : {}", currentUsername);
-        return mapper.getTransactionResponseList(allAccountsTransactions);
+        return mapper.getTransactionResponseList(new ArrayList<>(allAccountsTransactions));
     }
+
 
     @Override
     public List<TransactionResponseDTO> getAllTransactions(long accountNumber) {
         logger.info("Fetching all transactions for account number: {}", accountNumber);
 
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        Account account = accountRepository.findById(accountNumber).orElseThrow(() -> {
-            logger.error("Account with account number: {} is not available", accountNumber);
-            return new AccountRelatedException("Account with account number: " + accountNumber + " is not available");
-        });
+        Account account = accountRepository.findById(accountNumber).orElseThrow(() ->
+                new AccountRelatedException("Account with account number: " + accountNumber + " is not available"));
 
         if (!account.getCustomer().getUser().getUsername().equals(currentUsername)) {
-            logger.error("Unauthorized access to transactions of account number: {}", accountNumber);
             throw new AccountRelatedException("Unauthorized access to transactions of account number: " + accountNumber);
         }
 
@@ -82,44 +80,39 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
 
-//    @Override
-//    public TransactionResponseDTO getTransactionById(long transactionId) {
-//        logger.info("Fetching transaction with ID: {}", transactionId);
-//        Transaction transaction = transactionRepository.findById(transactionId).orElseThrow(() -> {
-//            logger.error("Transaction with ID: {} could not be found", transactionId);
-//            return new TransactionRelatedException("Transaction with ID : " + transactionId + " could not be found");
-//        });
-//        return mapper.transactionEntityToResponse(transaction);
-//    }
-
-
     @Override
     public TransactionResponseDTO makeTransaction(long senderAccount, long receiverAccount, double amount) {
         logger.info("Making transaction from sender account: {} to receiver account: {} with amount: {}", senderAccount, receiverAccount, amount);
 
-        Account sender = accountRepository.findById(senderAccount).orElseThrow(() -> {
-            logger.error("Account with account number: {} is not available", senderAccount);
-            return new AccountRelatedException("Account with account number : " + senderAccount + " is not available");
-        });
+        Account sender = accountRepository.findById(senderAccount).orElseThrow(() -> new AccountRelatedException("Account with account number : " + senderAccount + " is not available"));
+
+        if (!sender.getBank().isActive()) {
+            throw new BankRealtedException("Bank with ID : "
+                    + sender.getBank().getBankId() + " is not active");
+        }
 
         if (!sender.isActive()) {
-            logger.error("Account with account number: {} is not active", senderAccount);
             throw new AccountRelatedException("Account with account number : " + senderAccount + " is not active");
         }
 
-        Account receiver = accountRepository.findById(receiverAccount).orElseThrow(() -> {
-            logger.error("Account with account number: {} is not available", receiverAccount);
-            return new AccountRelatedException("Account with account number : " + receiverAccount + " is not available");
-        });
+
+        Account receiver = accountRepository.findById(receiverAccount).orElseThrow(() ->
+                new AccountRelatedException("Account with account number : "
+                        + receiverAccount + " is not available"));
+
+        if (!receiver.getBank().isActive()) {
+            throw new BankRealtedException("Bank with ID : "
+                    + receiver.getBank().getBankId() + " is not active");
+        }
 
         if (!receiver.isActive()) {
-            logger.error("Account with account number: {} is not active", receiverAccount);
-            throw new AccountRelatedException("Account with account number : " + receiverAccount + " is not active");
+            throw new AccountRelatedException("Account with account number : "
+                    + receiverAccount + " is not active");
         }
 
         if (sender.getBalance() < amount) {
-            logger.error("Insufficient balance in sender account: {}", senderAccount);
-            throw new AccountRelatedException("Insufficient Balance in sender account : " + senderAccount);
+            throw new AccountRelatedException("Insufficient Balance in sender account : "
+                    + senderAccount);
         }
 
         Transaction transaction = new Transaction();
@@ -160,7 +153,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         Customer customer = user.getCustomer();
         List<Account> accounts = customer.getAccounts();
-        List<Transaction> allTransactions = new ArrayList<>();
+        Set<Transaction> allTransactions = new HashSet<>();
 
         for (Account account : accounts) {
             allTransactions.addAll(transactionRepository.findBySenderAccountNumber_AccountNumberAndTransactionTimestampBetween(
@@ -172,8 +165,9 @@ public class TransactionServiceImpl implements TransactionService {
         logger.info("Found {} transactions for user {} between dates {} and {}",
                 allTransactions.size(), username, startDate, endDate);
 
-        return mapper.getTransactionResponseList(allTransactions);
+        return mapper.getTransactionResponseList(new ArrayList<>(allTransactions));
     }
+
 
 
     @Override
@@ -203,4 +197,34 @@ public class TransactionServiceImpl implements TransactionService {
         return mapper.getTransactionResponseList(transactions);
     }
 
+    @Override
+    public double getAccountBalance(Long accountNumber) {
+        Account account = accountRepository.findById(accountNumber)
+                .orElseThrow(() -> new AccountRelatedException("Account with account number: " + accountNumber + " is not available"));
+
+        if (!account.getBank().isActive()) {
+            throw new BankRealtedException("Bank with ID : "
+                    + account.getBank().getBankId() + " is not active");
+        }
+
+        if (!account.isActive()) {
+            throw new AccountRelatedException("Account with account number : " + account.getAccountNumber() + " is not active");
+        }
+
+        return account.getBalance();
+    }
+
+    @Override
+    public double getTotalBalance() {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findUserByUsername(currentUsername).get();
+
+        Customer customer = user.getCustomer();
+        double totalBalance = customer.getAccounts().stream()
+                .filter(account -> account.getBank().isActive() && account.isActive())
+                .mapToDouble(Account::getBalance)
+                .sum();
+
+        return totalBalance;
+    }
 }

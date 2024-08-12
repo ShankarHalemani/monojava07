@@ -2,7 +2,9 @@ package com.techlabs.app.controller;
 
 import com.techlabs.app.dto.ContactDetailsDTO;
 import com.techlabs.app.service.ContactDetailsService;
+import com.techlabs.app.util.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +22,20 @@ public class ContactDetailsController {
     @Autowired
     private ContactDetailsService contactDetailsService;
 
-    @Operation(summary = "Get All Contact Details for a Contact")
+    @Operation(summary = "Get All Contact Details for a Contact with pagination and sorting")
     @GetMapping("/contacts/{contactId}/contactDetails")
-    public ResponseEntity<List<ContactDetailsDTO>> getAllContactDetailsOfContact(@PathVariable(name = "contactId")Long contactId) {
-        logger.info("Fetching all contact details of contact");
-        List<ContactDetailsDTO> contactDetailsDTOS = contactDetailsService
-                .getAllContactDetailsOfContact(contactId);
-        return new ResponseEntity<>(contactDetailsDTOS, HttpStatus.OK);
+    public ResponseEntity<PagedResponse<ContactDetailsDTO>> getAllContactDetailsOfContact(
+            @PathVariable(name = "contactId") Long contactId,
+            @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+            @RequestParam(name = "size", defaultValue = "10") @Min(1) int size,
+            @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction
+    ) {
+        logger.info("Fetching all contact details of contact with ID: {} with page: {}, size: {}, sortBy: {}, direction: {}", contactId, page, size, sortBy, direction);
+        PagedResponse<ContactDetailsDTO> pagedResponse = contactDetailsService.getAllContactDetailsOfContact(contactId, page, size, sortBy, direction);
+        return new ResponseEntity<>(pagedResponse, HttpStatus.OK);
     }
+
 
     @Operation(summary = "Get Contact Detail by ID")
     @GetMapping("/contact-details/{id}")

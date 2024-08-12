@@ -51,7 +51,7 @@ public class BankServiceImpl implements BankService {
             throw new BankRealtedException("No Banks Found");
         }
         List<BankResponseDTO> bankResponseList = mapper.getBankResponseList(banks.getContent());
-        return new PagedResponse<BankResponseDTO>(bankResponseList, banks.getNumber(), banks.getNumberOfElements(),
+        return new PagedResponse<>(bankResponseList, banks.getNumber(), banks.getNumberOfElements(),
                 banks.getTotalElements(), banks.getTotalPages(), banks.isLast());
 
     }
@@ -59,10 +59,13 @@ public class BankServiceImpl implements BankService {
     @Override
     public BankResponseDTO getBankById(long bankId) {
         logger.info("Fetching bank with ID: {}", bankId);
-        Bank bank = bankRepository.findById(bankId).orElseThrow(() -> {
-            logger.error("Bank with ID: {} is not found", bankId);
-            return new BankRealtedException("Bank with ID : " + bankId + " is not found");
-        });
+        Bank bank = bankRepository.findById(bankId).orElseThrow(() ->
+                new BankRealtedException("Bank with ID : " + bankId + " is not found"));
+
+        if (!bank.isActive()) {
+            throw new BankRealtedException("Bank with ID : " + bank.getBankId() + " is not active");
+        }
+
         return mapper.bankEntityToResponse(bank);
     }
 
@@ -83,10 +86,9 @@ public class BankServiceImpl implements BankService {
     @Override
     public BankResponseDTO updateBank(BankRequestDTO bankRequestDTO) {
         logger.info("Updating bank with ID: {}", bankRequestDTO.getBankId());
-        Bank bank = bankRepository.findById(bankRequestDTO.getBankId()).orElseThrow(() -> {
-            logger.error("Bank with ID: {} is not found", bankRequestDTO.getBankId());
-            return new BankRealtedException("Bank with ID : " + bankRequestDTO.getBankId() + " is not found");
-        });
+        Bank bank = bankRepository.findById(bankRequestDTO.getBankId()).orElseThrow(() ->
+                new BankRealtedException("Bank with ID : "
+                        + bankRequestDTO.getBankId() + " is not found"));
 
         if (!bank.isActive()) {
             logger.error("Bank with ID: {} is not active", bankRequestDTO.getBankId());
@@ -103,13 +105,10 @@ public class BankServiceImpl implements BankService {
     @Override
     public BankResponseDTO activateBank(long bankId) {
         logger.info("Activating bank with ID: {}", bankId);
-        Bank bank = bankRepository.findById(bankId).orElseThrow(() -> {
-            logger.error("Bank with ID: {} is not found", bankId);
-            return new BankRealtedException("Bank with ID : " + bankId + " is not found");
-        });
+        Bank bank = bankRepository.findById(bankId).orElseThrow(() ->
+                new BankRealtedException("Bank with ID : " + bankId + " is not found"));
 
         if (bank.isActive()) {
-            logger.error("Bank with ID: {} is already active", bankId);
             throw new BankRealtedException("Bank with ID : " + bankId + " is already active");
         }
 
@@ -122,23 +121,18 @@ public class BankServiceImpl implements BankService {
     @Override
     public void deleteBankById(long bankId) {
         logger.info("Deleting bank with ID: {}", bankId);
-        Bank bank = bankRepository.findById(bankId).orElseThrow(() -> {
-            logger.error("Bank with ID: {} is not found", bankId);
-            return new BankRealtedException("Bank with ID : " + bankId + " is not found");
-        });
+        Bank bank = bankRepository.findById(bankId).orElseThrow(() ->
+                new BankRealtedException("Bank with ID : " + bankId + " is not found"));
 
         if (!bank.isActive()) {
-            logger.error("Bank with ID: {} is already deleted", bankId);
             throw new BankRealtedException("Bank with ID : " + bankId + " is already deleted");
         }
 
         bank.setActive(false);
         bank.getAccounts().forEach(account -> {
-            account.setActive(false);
-            account.setBalance(0);
             Customer customer = account.getCustomer();
             double totalBalance = customer.getAccounts().stream()
-                    .filter(Account::isActive)
+                    .filter(singleAccount -> singleAccount.getBank().isActive() && singleAccount.isActive())
                     .mapToDouble(Account::getBalance)
                     .sum();
             customer.setTotalBalance(totalBalance);
@@ -147,7 +141,6 @@ public class BankServiceImpl implements BankService {
             customerRepository.save(customer);
         });
 
-        accountRepository.saveAll(bank.getAccounts());
         bankRepository.save(bank);
         logger.info("Bank with ID: {} deleted successfully", bankId);
     }

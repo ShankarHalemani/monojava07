@@ -1,5 +1,7 @@
 package com.techlabs.app.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,6 +16,7 @@ import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends RuntimeException{
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(BankRealtedException e) {
         ErrorResponse error = new ErrorResponse();
@@ -26,6 +29,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(AccountRelatedException e) {
+        logger.error(e.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());

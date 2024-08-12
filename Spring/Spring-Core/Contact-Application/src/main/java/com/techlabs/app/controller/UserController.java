@@ -4,8 +4,10 @@ import com.techlabs.app.dto.RegisterDTO;
 import com.techlabs.app.dto.UserRequestDTO;
 import com.techlabs.app.dto.UserResponseDTO;
 import com.techlabs.app.service.UserService;
+import com.techlabs.app.util.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,13 +26,19 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Operation(summary = "Get All users")
+    @Operation(summary = "Get All Users with pagination and sorting")
     @GetMapping
-    public ResponseEntity<List<UserResponseDTO>> getAllUsers(){
-        logger.info("Fetching All Users");
-        List<UserResponseDTO> userResponseDTOS = userService.getAllUsers();
-        return new ResponseEntity<>(userResponseDTOS, HttpStatus.OK);
+    public ResponseEntity<PagedResponse<UserResponseDTO>> getAllUsers(
+            @RequestParam(name = "page", defaultValue = "0") @Min(0) int page,
+            @RequestParam(name = "size", defaultValue = "2") @Min(1) int size,
+            @RequestParam(name = "sortBy", defaultValue = "id") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction
+    ) {
+        logger.info("Fetching All Users with page: {}, size: {}, sortBy: {}, direction: {}", page, size, sortBy, direction);
+        PagedResponse<UserResponseDTO> pagedResponse = userService.getAllUsers(page, size, sortBy, direction);
+        return new ResponseEntity<>(pagedResponse, HttpStatus.OK);
     }
+
 
     @Operation(summary = "Get User by ID")
     @GetMapping("/{id}")

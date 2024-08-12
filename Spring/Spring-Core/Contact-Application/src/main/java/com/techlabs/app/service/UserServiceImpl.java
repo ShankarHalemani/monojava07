@@ -9,15 +9,17 @@ import com.techlabs.app.exception.UserRelatedException;
 import com.techlabs.app.mapper.Mapper;
 import com.techlabs.app.repository.RoleRepository;
 import com.techlabs.app.repository.UserRepository;
+import com.techlabs.app.util.PagedResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -33,15 +35,19 @@ public class UserServiceImpl implements UserService {
     private RoleRepository roleRepository;
 
     @Override
-    public List<UserResponseDTO> getAllUsers() {
-        List<User> users = userRepository.findAllUserByIsAdmin(false);
-        if (users.isEmpty()) {
-            logger.error("No users to be found");
-            throw new UserRelatedException("No users to be found");
-        }
+    public PagedResponse<UserResponseDTO> getAllUsers(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.DESC.name()) ?
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<User> userPage = userRepository.findAll(pageable);
+        List<User> userList = userPage.getContent();
+        List<UserResponseDTO> responseDTOList = mapper.getUserResponseList(userList);
 
-        return mapper.getUserResponseList(users);
+        return new PagedResponse<>(responseDTOList, userPage.getNumber(), userPage.getSize(),
+                userPage.getTotalElements(), userPage.getTotalPages(), userPage.isLast());
     }
+
+
 
     @Override
     public UserResponseDTO getUserById(Long id) {

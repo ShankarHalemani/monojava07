@@ -59,13 +59,12 @@ public class CustomerServiceImpl implements CustomerService {
         Page<Customer> all = customerRepository.findAll(pageable);
 
         if (all.getContent().isEmpty()) {
-            logger.warn("No customers found");
             throw new CustomerRelatedException("No Customers Found");
         }
 
         List<CustomerResponseDTO> customerResponseDTOS = mapper.getCustomerResponseList(all.getContent());
 
-        return new PagedResponse<CustomerResponseDTO>(customerResponseDTOS, all.getNumber(), all.getNumberOfElements(),
+        return new PagedResponse<>(customerResponseDTOS, all.getNumber(), all.getNumberOfElements(),
                 all.getTotalElements(), all.getTotalPages(), all.isLast());
 
     }
@@ -73,10 +72,9 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerResponseDTO getCustomerById(long customerId) {
         logger.info("Fetching customer with ID: {}", customerId);
-        Customer customer = customerRepository.findById(customerId).orElseThrow(() -> {
-            logger.error("Customer with ID: {} is not found", customerId);
-            return new CustomerRelatedException("Customer with ID : " + customerId + " is not found");
-        });
+        Customer customer = customerRepository.findById(customerId).orElseThrow(() ->
+                new CustomerRelatedException("Customer with ID : " + customerId + " is not found"));
+
         return mapper.customerEntityToResponse(customer);
     }
 
@@ -84,7 +82,6 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerResponseDTO addNewCustomer(CustomerRequestDTO customerRequestDTO) {
         logger.info("Adding new customer with username: {}", customerRequestDTO.getUsername());
         if (userRepository.existsUserByUsername(customerRequestDTO.getUsername())) {
-            logger.error("Customer with username: {} already exists", customerRequestDTO.getUsername());
             throw new CustomerRelatedException("Customer with username : "
                     + customerRequestDTO.getUsername() + " already exists");
         }
@@ -107,10 +104,9 @@ public class CustomerServiceImpl implements CustomerService {
         user.setCustomer(customer);
 
         Set<Role> roles = new HashSet<>();
-        Role newRole = roleRepository.findByName("ROLE_CUSTOMER").orElseThrow(() -> {
-            logger.error("Role ROLE_CUSTOMER not found");
-            return new RuntimeException("Role Not Found");
-        });
+        Role newRole = roleRepository.findByName("ROLE_CUSTOMER").orElseThrow(() ->
+                new RuntimeException("Role Not Found"));
+
         roles.add(newRole);
         user.setRoles(roles);
 
@@ -124,14 +120,10 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerResponseDTO updateCustomer(CustomerRequestDTO customerRequestDTO) {
         logger.info("Updating customer with ID: {}", customerRequestDTO.getCustomerId());
         Customer customer = customerRepository.findById(customerRequestDTO.getCustomerId())
-                .orElseThrow(() -> {
-                    logger.error("Customer with ID: {} is not found", customerRequestDTO.getCustomerId());
-                    return new CustomerRelatedException("Customer with ID : "
-                            + customerRequestDTO.getCustomerId() + " is not found");
-                });
+                .orElseThrow(() -> new CustomerRelatedException("Customer with ID : "
+                        + customerRequestDTO.getCustomerId() + " is not found"));
 
         if (!customer.isActive()) {
-            logger.error("Customer with ID: {} is not active", customerRequestDTO.getCustomerId());
             throw new CustomerRelatedException("Customer with ID : "
                     + customerRequestDTO.getCustomerId() + " is not active");
         }
@@ -154,21 +146,12 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void deleteCustomer(long customerId) {
         logger.info("Deleting customer with ID: {}", customerId);
-        Customer customer = customerRepository.findById(customerId).orElseThrow(() -> {
-            logger.error("Customer with ID: {} is not found", customerId);
-            return new CustomerRelatedException("Customer with ID : " + customerId + " is not found");
-        });
+        Customer customer = customerRepository.findById(customerId).orElseThrow(() ->
+                new CustomerRelatedException("Customer with ID : " + customerId + " is not found"));
 
-        customer.getAccounts().forEach(account -> {
-            account.setActive(false);
-            account.setBalance(0.0);
-        });
-
-        customer.setTotalBalance(0);
         User user = customer.getUser();
         user.setActive(false);
         customer.setActive(false);
-        accountRepository.saveAll(customer.getAccounts());
         customerRepository.save(customer);
         userRepository.save(user);
 
@@ -179,20 +162,15 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerResponseDTO activateCustomer(CustomerRequestDTO customerRequestDTO) {
         logger.info("Activating customer with ID: {}", customerRequestDTO.getCustomerId());
         Customer customer = customerRepository.findById(customerRequestDTO.getCustomerId())
-                .orElseThrow(() -> {
-                    logger.error("Customer with ID: {} is not found", customerRequestDTO.getCustomerId());
-                    return new CustomerRelatedException("Customer with ID : "
-                            + customerRequestDTO.getCustomerId() + " is not found");
-                });
+                .orElseThrow(() -> new CustomerRelatedException("Customer with ID : "
+                        + customerRequestDTO.getCustomerId() + " is not found"));
 
         if (customer.isActive()) {
-            logger.error("Customer with ID: {} is already active", customerRequestDTO.getCustomerId());
             throw new CustomerRelatedException("Customer with ID : "
                     + customerRequestDTO.getCustomerId() + " is already active");
         }
 
         if (!customerRequestDTO.isActive()) {
-            logger.error("Customer with ID: {} is already inactive", customerRequestDTO.getCustomerId());
             throw new CustomerRelatedException("Customer with ID : "
                     + customerRequestDTO.getCustomerId() + " is already inactive");
         }
@@ -206,11 +184,14 @@ public class CustomerServiceImpl implements CustomerService {
         customer.getAccounts().forEach(account -> {
             if (accountNumbersToActivate.contains(account.getAccountNumber())) {
                 account.setActive(true);
-                account.setBalance(1000);
             }
         });
 
-        double totalBalance = customer.getAccounts().stream().mapToDouble(Account::getBalance).sum();
+        double totalBalance = customer.getAccounts().stream()
+                .filter(singleAccount -> singleAccount.getBank().isActive() && singleAccount.isActive())
+                .mapToDouble(Account::getBalance)
+                .sum();
+
         customer.setTotalBalance(totalBalance);
 
         accountRepository.saveAll(customer.getAccounts());

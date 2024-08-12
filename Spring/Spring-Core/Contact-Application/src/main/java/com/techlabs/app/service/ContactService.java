@@ -2,11 +2,12 @@ package com.techlabs.app.service;
 
 import com.techlabs.app.dto.ContactRequestDTO;
 import com.techlabs.app.dto.ContactResponseDTO;
+import com.techlabs.app.util.PagedResponse;
 
 import java.util.List;
 
 public interface ContactService {
-    List<ContactResponseDTO> getAllContacts();
+    PagedResponse<ContactResponseDTO> getAllContacts(int page, int size, String sortBy, String direction);
 
     ContactResponseDTO getContactById(Long id);
 

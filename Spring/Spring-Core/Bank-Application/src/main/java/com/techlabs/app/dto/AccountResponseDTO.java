@@ -21,9 +21,9 @@ public class AccountResponseDTO {
 
     private BankResponseDTO bankResponseDTO;
 
-    private List<TransactionResponseDTO> sentTransactions;
-
-    private List<TransactionResponseDTO> receivedTransactions;
+//    private List<TransactionResponseDTO> sentTransactions;
+//
+//    private List<TransactionResponseDTO> receivedTransactions;
 
     private boolean active;
 }

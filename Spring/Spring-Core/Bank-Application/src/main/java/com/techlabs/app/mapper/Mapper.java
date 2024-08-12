@@ -39,13 +39,13 @@ public class Mapper {
         BankResponseDTO bankResponseDTO = bankEntityToResponse(account.getBank());
         accountResponseDTO.setBankResponseDTO(bankResponseDTO);
 
-        List<TransactionResponseDTO> sentTransactions = account.getSentTransactions().stream()
-                .map(transaction -> transactionEntityToResponse(transaction)).toList();
-        List<TransactionResponseDTO> receivedTransactions = account.getReceivedTransactions().stream()
-                .map(transaction -> transactionEntityToResponse(transaction)).toList();
-
-        accountResponseDTO.setSentTransactions(sentTransactions);
-        accountResponseDTO.setReceivedTransactions(receivedTransactions);
+//        List<TransactionResponseDTO> sentTransactions = account.getSentTransactions().stream()
+//                .map(transaction -> transactionEntityToResponse(transaction)).toList();
+//        List<TransactionResponseDTO> receivedTransactions = account.getReceivedTransactions().stream()
+//                .map(transaction -> transactionEntityToResponse(transaction)).toList();
+//
+//        accountResponseDTO.setSentTransactions(sentTransactions);
+//        accountResponseDTO.setReceivedTransactions(receivedTransactions);
 
         return accountResponseDTO;
     }
@@ -106,31 +106,5 @@ public class Mapper {
 
         return transactionResponseDTOS;
     }
-
-//    public PagedResponse<TransactionResponseDTO> pagingAndSortingIntransaction(int page, int size, String sortBy,
-//                                                                               String direction, List<Transaction> transactions) {
-//        List<TransactionResponseDTO> transactionResponseList = getTransactionResponseList(transactions);
-//
-//        transactionResponseList.sort((t1, t2) -> {
-//            switch (sortBy) {
-//                case "transactionDate":
-//                    return direction.equalsIgnoreCase("ASC") ? t1.getTransactionTimestamp().compareTo(t2.getTransactionTimestamp())
-//                            : t2.getTransactionTimestamp().compareTo(t1.getTransactionTimestamp());
-//                default:
-//                    return direction.equalsIgnoreCase("ASC") ? t1.getTransactionId().compareTo(t2.getTransactionId())
-//                            : t2.getTransactionId().compareTo(t1.getTransactionId());
-//
-//            }
-//        });
-//
-//        int start = Math.min(page * size, transactionResponseList.size());
-//        int end = Math.min(start + size, transactionResponseList.size());
-//        List<TransactionResponseDTO> paginatedList = transactionResponseList.subList(start, end);
-//
-//        return new PagedResponse<>(paginatedList, page, paginatedList.size(), transactionResponseList.size(),
-//                (transactionResponseList.size() + size - 1) / size, end == transactionResponseList.size());
-//
-//    }
-
 
 }

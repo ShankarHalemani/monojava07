@@ -47,20 +47,6 @@ public class TransactionController {
     }
 
 
-//    @Operation(summary = "Get transaction by ID")
-//    @GetMapping("/transaction/{transactionId}")
-//    public ResponseEntity<TransactionResponseDTO> getTransactionById(@PathVariable(name = "transactionId") long transactionId) {
-//        logger.info("Fetching transaction with ID: {}", transactionId);
-//        try {
-//            TransactionResponseDTO transactionResponseDTO = transactionService.getTransactionById(transactionId);
-//            return new ResponseEntity<>(transactionResponseDTO, HttpStatus.OK);
-//        } catch (TransactionRelatedException e) {
-//            logger.error("Error fetching transaction with ID: {}", transactionId, e);
-//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//        }
-//    }
-
-
     @Operation(summary = "Make a new transaction")
     @PostMapping("/{senderAccount}/{receiverAccount}")
     public ResponseEntity<TransactionResponseDTO> newTransaction(@PathVariable(name = "senderAccount") long senderAccount,
@@ -109,6 +95,23 @@ public class TransactionController {
 
         return new ResponseEntity<>(transactionResponseDTOS, HttpStatus.OK);
     }
+
+    @Operation(summary = "Get Account balance by account number")
+    @GetMapping("/balance/{accountNumber}")
+    public ResponseEntity<Object> getBalanceOfAccount(@PathVariable(name = "accountNumber")Long accountNumber){
+        logger.info("Fetching account balance of account number : {}",accountNumber);
+        double balance = transactionService.getAccountBalance(accountNumber);
+        return ResponseEntity.ok("Account number : "+accountNumber+" Balance : "+balance);
+    }
+
+    @Operation(summary = "Get balance of all accounts of current customer")
+    @GetMapping("/totalBalance")
+    public ResponseEntity<Object> getTotalBalance(){
+        logger.info("Fetching total account balance of current customer");
+        double totalBalance = transactionService.getTotalBalance();
+        return ResponseEntity.ok("Total balance : "+totalBalance);
+    }
+
 
 
 }

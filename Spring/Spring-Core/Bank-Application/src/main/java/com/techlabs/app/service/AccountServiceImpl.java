@@ -58,14 +58,14 @@ public class AccountServiceImpl implements AccountService {
         Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Account> accounts = accountRepository.findAll(pageable);
+        Page<Account> accounts = accountRepository.findAllByBankActive(true, pageable);
+
         if (accounts.getContent().isEmpty()) {
-            logger.error("No Accounts Found");
-            throw new BankRealtedException("No Accounts Found");
+            throw new AccountRelatedException("No Accounts Found");
         }
 
         List<AccountResponseDTO> accountResponseList = mapper.getAccountResponseList(accounts.getContent());
-        return new PagedResponse<AccountResponseDTO>(accountResponseList, accounts.getNumber(), accounts.getNumberOfElements(),
+        return new PagedResponse<>(accountResponseList, accounts.getNumber(), accounts.getNumberOfElements(),
                 accounts.getTotalElements(), accounts.getTotalPages(), accounts.isLast());
 
     }
@@ -73,31 +73,30 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountResponseDTO getAccountByAccountNumber(long accountNumber) {
         logger.info("Fetching account with account number: {}", accountNumber);
-        Account account = accountRepository.findById(accountNumber).orElseThrow(() -> {
-            logger.error("Account with account number: {} is not available", accountNumber);
-            return new AccountRelatedException("Account with account number : " + accountNumber + " is not available");
-        });
+        Account account = accountRepository.findById(accountNumber).orElseThrow(() ->
+                new AccountRelatedException("Account with account number : "
+                        + accountNumber + " is not available"));
+
+        Bank bank = account.getBank();
+        if (!bank.isActive()) {
+            throw new BankRealtedException("Bank with ID : " + bank.getBankId() + " is not active");
+        }
+
         return mapper.accountEntityToResponse(account);
     }
 
     @Override
     public AccountResponseDTO createNewAccount(long customerId, long bankId) {
         logger.info("Creating new account for customer ID: {} in bank ID: {}", customerId, bankId);
-        Customer customer = customerRepository.findById(customerId).orElseThrow(() -> {
-            logger.error("Customer with ID: {} not found", customerId);
-            return new CustomerRelatedException("Customer with ID : " + customerId + " is not found");
-        });
+        Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new CustomerRelatedException(
+                "Customer with ID : " + customerId + " is not found"));
         if (!customer.isActive()) {
-            logger.error("Customer with ID: {} is not active", customerId);
             throw new CustomerRelatedException("Customer with ID : " + customerId + " is not active");
         }
 
-        Bank bank = bankRepository.findById(bankId).orElseThrow(() -> {
-            logger.error("Bank with ID: {} not found", bankId);
-            return new BankRealtedException("Bank with ID : " + bankId + " is not found");
-        });
+        Bank bank = bankRepository.findById(bankId).orElseThrow(() ->
+                new BankRealtedException("Bank with ID : " + bankId + " is not found"));
         if (!bank.isActive()) {
-            logger.error("Bank with ID: {} is not active", bankId);
             throw new BankRealtedException("Bank with ID : " + bankId + " is not active");
         }
 
@@ -132,14 +131,18 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountResponseDTO updateAccountBalance(long accountNumber, double amount) {
         logger.info("Updating balance for account number: {} by amount: {}", accountNumber, amount);
-        Account account = accountRepository.findById(accountNumber).orElseThrow(() -> {
-            logger.error("Account with account number: {} is not available", accountNumber);
-            return new AccountRelatedException("Account with account number : " + accountNumber + " is not available");
-        });
+        Account account = accountRepository.findById(accountNumber).orElseThrow(() ->
+                new AccountRelatedException("Account with account number : "
+                        + accountNumber + " is not available"));
 
         if (!account.isActive()) {
             logger.error("Account with account number: {} is not active", accountNumber);
             throw new AccountRelatedException("Account with account number : " + accountNumber + " is not active");
+        }
+
+        if (!account.getBank().isActive()) {
+            throw new BankRealtedException("Bank with ID : "
+                    + account.getBank().getBankId() + " is not active");
         }
 
         double currentBalance = account.getBalance();
@@ -148,7 +151,7 @@ public class AccountServiceImpl implements AccountService {
 
         Customer customer = account.getCustomer();
         double totalBalance = customer.getAccounts().stream()
-                .filter(Account::isActive)
+                .filter(singleAccount -> singleAccount.getBank().isActive() && singleAccount.isActive())
                 .mapToDouble(Account::getBalance)
                 .sum();
         customer.setTotalBalance(totalBalance);
@@ -173,15 +176,19 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void deleteAccount(long accountNumber) {
         logger.info("Deleting account with account number: {}", accountNumber);
-        Account account = accountRepository.findById(accountNumber).orElseThrow(() -> {
-            logger.error("Account with account number: {} is not available", accountNumber);
-            return new AccountRelatedException("Account with account number : " + accountNumber + " is not available");
-        });
+        Account account = accountRepository.findById(accountNumber).orElseThrow(() ->
+                new AccountRelatedException("Account with account number : "
+                        + accountNumber + " is not available"));
+
+        if (!account.getBank().isActive()) {
+            throw new BankRealtedException("Bank with ID : "
+                    + account.getBank().getBankId() + " is not active");
+        }
+
         account.setActive(false);
-        account.setBalance(0);
         Customer customer = account.getCustomer();
         double totalBalance = customer.getAccounts().stream()
-                .filter(Account::isActive)
+                .filter(singleAccount -> singleAccount.getBank().isActive() && singleAccount.isActive())
                 .mapToDouble(Account::getBalance)
                 .sum();
         customer.setTotalBalance(totalBalance);
@@ -193,7 +200,7 @@ public class AccountServiceImpl implements AccountService {
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setTo(customer.getUser().getUsername());
         emailDTO.setSubject("Account Closing Update");
-        String body = "Your account in the "+bank.getFullName()+" has been deleted successfully";
+        String body = "Your account in the " + bank.getFullName() + " has been deleted successfully";
         emailDTO.setBody(body);
 
         emailSender.sendMailWithAttachement(emailDTO);
@@ -204,32 +211,29 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public AccountResponseDTO activateAccount(long accountNumber) {
         logger.info("Activating account with account number: {}", accountNumber);
-        Account account = accountRepository.findById(accountNumber).orElseThrow(() -> {
-            logger.error("Account with account number: {} is not available", accountNumber);
-            return new AccountRelatedException("Account with account number : " + accountNumber + " is not available");
-        });
+        Account account = accountRepository.findById(accountNumber).orElseThrow(() ->
+                new AccountRelatedException("Account with account number : "
+                        + accountNumber + " is not available"));
+
+        if (account.isActive()) {
+            throw new AccountRelatedException("Account with account number : "
+                    + accountNumber + " is already activated");
+        }
 
         Bank bank = account.getBank();
         if (!bank.isActive()) {
-            logger.error("Bank with ID: {} is not active", bank.getBankId());
             throw new BankRealtedException("Bank with ID : " + bank.getBankId() + " is not active");
         }
 
         Customer customer = account.getCustomer();
         if (!customer.isActive()) {
-            logger.error("Customer with ID: {} is not active", customer.getCustomerId());
             throw new CustomerRelatedException("Customer with ID : " + customer.getCustomerId() + " is not active");
         }
 
-        if (account.isActive()) {
-            logger.error("Account with account number: {} is already activated", accountNumber);
-            throw new AccountRelatedException("Account with account number : " + accountNumber + " is already activated");
-        }
         account.setActive(true);
-        account.setBalance(1000);
         customer = account.getCustomer();
         double totalBalance = customer.getAccounts().stream()
-                .filter(Account::isActive)
+                .filter(singleAccount -> singleAccount.getBank().isActive() && singleAccount.isActive())
                 .mapToDouble(Account::getBalance)
                 .sum();
         customer.setTotalBalance(totalBalance);
@@ -241,7 +245,7 @@ public class AccountServiceImpl implements AccountService {
         EmailDTO emailDTO = new EmailDTO();
         emailDTO.setTo(customer.getUser().getUsername());
         emailDTO.setSubject("Account Closing Update");
-        String body = "Your account in the "+bank.getFullName()+" has been activated successfully";
+        String body = "Your account in the " + bank.getFullName() + " has been activated successfully";
         emailDTO.setBody(body);
 
         emailSender.sendMailWithAttachement(emailDTO);
@@ -254,10 +258,14 @@ public class AccountServiceImpl implements AccountService {
     public List<TransactionResponseDTO> getAllTransactions(long accountNumber) {
         logger.info("Fetching all transactions for account number: {}", accountNumber);
 
-        Account account = accountRepository.findById(accountNumber).orElseThrow(() -> {
-            logger.error("Account with account number: {} is not available", accountNumber);
-            return new AccountRelatedException("Account with account number: " + accountNumber + " is not available");
-        });
+        Account account = accountRepository.findById(accountNumber).orElseThrow(() ->
+                new AccountRelatedException("Account with account number: "
+                        + accountNumber + " is not available"));
+
+        if (!account.getBank().isActive()) {
+            throw new BankRealtedException("Bank with ID : "
+                    + account.getBank().getBankId() + " is not active");
+        }
 
         List<Transaction> transactions = new ArrayList<>(account.getSentTransactions());
         transactions.addAll(account.getReceivedTransactions());
@@ -272,6 +280,11 @@ public class AccountServiceImpl implements AccountService {
 
         Account account = accountRepository.findById(accountNumber)
                 .orElseThrow(() -> new AccountRelatedException("Account with account number: " + accountNumber + " is not available"));
+
+        if (!account.getBank().isActive()) {
+            throw new BankRealtedException("Bank with ID : "
+                    + account.getBank().getBankId() + " is not active");
+        }
 
         List<Transaction> sentTransactions = transactionRepository
                 .findBySenderAccountNumber_AccountNumberAndTransactionTimestampBetween(accountNumber, startDate, endDate);

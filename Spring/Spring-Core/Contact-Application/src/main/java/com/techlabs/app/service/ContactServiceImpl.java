@@ -5,12 +5,18 @@ import com.techlabs.app.dto.ContactResponseDTO;
 import com.techlabs.app.entity.Contact;
 import com.techlabs.app.entity.User;
 import com.techlabs.app.exception.ContactRelatedException;
+import com.techlabs.app.exception.UserRelatedException;
 import com.techlabs.app.mapper.Mapper;
 import com.techlabs.app.repository.ContactRepository;
 import com.techlabs.app.repository.UserRepository;
+import com.techlabs.app.util.PagedResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -31,18 +37,23 @@ public class ContactServiceImpl implements ContactService{
     private UserRepository userRepository;
 
     @Override
-    public List<ContactResponseDTO> getAllContacts() {
+    public PagedResponse<ContactResponseDTO> getAllContacts(int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.DESC.name()) ?
+                Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findUserByUsername(currentUsername).get();
-        List<Contact> contacts = user.getContacts();
+        User user = userRepository.findUserByUsername(currentUsername).orElseThrow(() ->
+                new UserRelatedException("User not found"));
 
-        if(contacts.isEmpty()){
-            logger.error("There are no contacts to be found for current user with ID : {}",user.getId());
-            throw new ContactRelatedException("There are no contacts to be found for current user with ID : "+user.getId());
-        }
+        Page<Contact> contactPage = contactRepository.findByUser(user, pageable);
+        List<Contact> contactList = contactPage.getContent();
+        List<ContactResponseDTO> responseDTOList = mapper.getContactResponseList(contactList);
 
-        return mapper.getContactResponseList(contacts);
+        return new PagedResponse<>(responseDTOList, contactPage.getNumber(), contactPage.getSize(),
+                contactPage.getTotalElements(), contactPage.getTotalPages(), contactPage.isLast());
     }
+
 
     @Override
     public ContactResponseDTO getContactById(Long id) {
