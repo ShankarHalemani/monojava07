@@ -17,8 +17,10 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler extends RuntimeException{
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(BankRealtedException e) {
+        logger.error(e.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());
@@ -40,6 +42,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(CustomerRelatedException e) {
+        logger.error(e.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());
@@ -50,6 +53,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(TransactionRelatedException e) {
+        logger.error(e.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());
@@ -60,6 +64,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(AdminRelatedException e) {
+        logger.error(e.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());
@@ -70,6 +75,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(UserRelatedException e) {
+        logger.error(e.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());
@@ -80,6 +86,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        logger.error(ex.getMessage());
         Map<String, String> errorDetails = new HashMap<>();
         errorDetails.put("message", ex.getMessage());
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
@@ -87,6 +94,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationException(MethodArgumentNotValidException ex) {
+        logger.error(ex.getMessage());
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors()
                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
@@ -95,6 +103,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(APIException exc) {
+        logger.error(exc.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setMessage(exc.getMessage());
@@ -104,6 +113,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleException(AccessDeniedException exc) {
+        logger.error(exc.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.UNAUTHORIZED.value());
         error.setMessage(exc.getClass().getSimpleName());
@@ -113,6 +123,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(Exception exc) {
+        logger.error(exc.getMessage());
         ErrorResponse error = new ErrorResponse();
         System.out.println("printing error");
         error.setStatus(HttpStatus.BAD_REQUEST.value());

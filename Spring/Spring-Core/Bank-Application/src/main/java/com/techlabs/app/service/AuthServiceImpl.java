@@ -59,12 +59,9 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String login(LoginDTO loginDTO) {
         logger.info("Attempting login for username: {}", loginDTO.getUsername());
-        User user = userRepository.findUserByUsername(loginDTO.getUsername()).orElseThrow(() -> {
-            logger.error("User with username: {} not found", loginDTO.getUsername());
-            return new UsernameNotFoundException("User with username : " + loginDTO.getUsername() + " not found");
-        });
+        User user = userRepository.findUserByUsername(loginDTO.getUsername()).orElseThrow(() ->
+                new UsernameNotFoundException("User with username : " + loginDTO.getUsername() + " not found"));
         if (!user.isActive()) {
-            logger.error("User with username: {} is not active", loginDTO.getUsername());
             throw new UserRelatedException("Current user is not active");
         }
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
@@ -80,12 +77,12 @@ public class AuthServiceImpl implements AuthService {
     public String register(RegisterDTO registerDTO, String role, MultipartFile file) {
         logger.info("Attempting registration for username: {} with role: {}", registerDTO.getUsername(), role);
         if (userRepository.existsUserByUsername(registerDTO.getUsername()) && role.equals("ROLE_CUSTOMER")) {
-            logger.error("Customer with the Username: {} already exists", registerDTO.getUsername());
+
             throw new CustomerRelatedException("Customer with the Username : " + registerDTO.getUsername() + " already exists");
         }
 
         if (userRepository.existsUserByUsername(registerDTO.getUsername()) && role.equals("ROLE_ADMIN")) {
-            logger.error("Admin with the Username: {} already exists", registerDTO.getUsername());
+
             throw new AdminRelatedException("Admin with the Username : " + registerDTO.getUsername() + " already exists");
         }
 
@@ -116,10 +113,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         Set<Role> roles = new HashSet<>();
-        Role newRole = roleRepository.findByName(role).orElseThrow(() -> {
-            logger.error("Role not found: {}", role);
-            return new RuntimeException("Role Not Found");
-        });
+        Role newRole = roleRepository.findByName(role).orElseThrow(() ->
+                new RuntimeException("Role Not Found"));
         roles.add(newRole);
         user.setRoles(roles);
 

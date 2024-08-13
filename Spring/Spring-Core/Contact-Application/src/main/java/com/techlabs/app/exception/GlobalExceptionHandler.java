@@ -1,5 +1,7 @@
 package com.techlabs.app.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,9 +16,11 @@ import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends RuntimeException{
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(AdminRelatedException e) {
+        logger.error(e.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());
@@ -27,6 +31,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(ContactRelatedException e) {
+        logger.error(e.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());
@@ -37,6 +42,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(ContactDetailsRelatedException e) {
+        logger.error(e.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());
@@ -47,6 +53,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(UserRelatedException e) {
+        logger.error(e.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.NOT_FOUND.value());
         error.setMessage(e.getMessage());
@@ -57,6 +64,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        logger.error(ex.getMessage());
         Map<String, String> errorDetails = new HashMap<>();
         errorDetails.put("message", ex.getMessage());
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
@@ -64,6 +72,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationException(MethodArgumentNotValidException ex) {
+        logger.error(ex.getMessage());
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getFieldErrors()
                 .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
@@ -72,6 +81,7 @@ public class GlobalExceptionHandler extends RuntimeException{
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(APIException exc) {
+        logger.error(exc.getMessage());
         ErrorResponse error = new ErrorResponse();
         error.setStatus(HttpStatus.BAD_REQUEST.value());
         error.setMessage(exc.getMessage());
@@ -80,16 +90,19 @@ public class GlobalExceptionHandler extends RuntimeException{
     }
 
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleException(AccessDeniedException exc) {
+    public ResponseEntity<ErrorResponse> handleException(AccessDeniedException exc, WebRequest request) {
+        logger.error("Access denied for request URI: {}", request.getDescription(false));
         ErrorResponse error = new ErrorResponse();
-        error.setStatus(HttpStatus.UNAUTHORIZED.value());
-        error.setMessage(exc.getClass().getSimpleName());
+        error.setStatus(HttpStatus.FORBIDDEN.value());
+        error.setMessage("You do not have the required role to access this resource.");
         error.setTimestamp(LocalDateTime.now());
-        return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
+
 
     @ExceptionHandler
     public ResponseEntity<ErrorResponse> handleException(Exception exc) {
+        logger.error(exc.getMessage());
         ErrorResponse error = new ErrorResponse();
         System.out.println("printing error");
         error.setStatus(HttpStatus.BAD_REQUEST.value());

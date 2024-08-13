@@ -47,7 +47,7 @@ public class BankServiceImpl implements BankService {
         Pageable pageable = PageRequest.of(page, size, sort);
         Page<Bank> banks = bankRepository.findAll(pageable);
         if (banks.getContent().isEmpty()) {
-            logger.error("No Banks Found");
+
             throw new BankRealtedException("No Banks Found");
         }
         List<BankResponseDTO> bankResponseList = mapper.getBankResponseList(banks.getContent());
@@ -91,7 +91,7 @@ public class BankServiceImpl implements BankService {
                         + bankRequestDTO.getBankId() + " is not found"));
 
         if (!bank.isActive()) {
-            logger.error("Bank with ID: {} is not active", bankRequestDTO.getBankId());
+            
             throw new BankRealtedException("Bank with ID : " + bankRequestDTO.getBankId() + " is not active");
         }
 

@@ -26,9 +26,6 @@ public class MailServiceImpl implements MailService {
         helper.setText(body);
         helper.setTo(to);
 
-//        FileSystemResource file = new FileSystemResource(new File(filePath));
-//        helper.addAttachment(file.getFilename(), file);
-
         javaMailSender.send(mimeMessage);
 
         System.out.println("Mail was sent successfully");
