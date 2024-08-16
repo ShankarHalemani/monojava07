@@ -1,16 +1,55 @@
-import React from "react";
-import { useRef } from "react";
+import React, { useRef } from "react";
 
 function Component2() {
   const formRef = useRef();
 
   function validateForm(inputs) {
-    if (!inputs.emailInput.value) {
-      alert("Email cannnot be null");
-      if (!inputs.emailInput.value.length < 6) {
-        alert("Email cannot be less than 6");
-      }
+    let isValid = true;
+
+    const email = inputs.emailInput.value;
+    if (!email) {
+      alert("Email cannot be null");
+      isValid = false;
+    } else if (email.length < 6) {
+      alert("Email cannot be less than 6 characters");
+      isValid = false;
+    } else if (!email.includes("@") || !email.includes(".")) {
+      alert("Email must contain '@' and '.'");
+      isValid = false;
     }
+
+    if (!inputs.passwordInput.value) {
+      alert("Password cannot be null");
+      isValid = false;
+    } else if (inputs.passwordInput.value.length < 6) {
+      alert("Password must be at least 6 characters long");
+      isValid = false;
+    }
+
+    if (!inputs.addressInput.value) {
+      alert("Address cannot be null");
+      isValid = false;
+    }
+
+    if (!inputs.cityInput.value) {
+      alert("City cannot be null");
+      isValid = false;
+    }
+
+    if (inputs.stateInput.value === "Choose...") {
+      alert("Please select a state");
+      isValid = false;
+    }
+
+    if (!inputs.zipInput.value) {
+      alert("Zip code cannot be null");
+      isValid = false;
+    } else if (!/^\d{5}$/.test(inputs.zipInput.value)) {
+      alert("Zip code must be a 5-digit number");
+      isValid = false;
+    }
+
+    return isValid;
   }
 
   const handleSubmit = (e) => {
