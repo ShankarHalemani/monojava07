@@ -3,14 +3,13 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import Component1 from "./components/component1";
+import Component2 from "./components/component2";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <>
-    <h1>Monocept</h1>
     <App />
-    <Component1 shankar={"Hello Bro"} monocept={1} />
+    <Component2 />
   </>
 );
 

@@ -3,7 +3,10 @@ import React from "react";
 const component1 = (props) => {
   return (
     <>
-      <div>component1{props.shankar}</div>;
+      <div>
+        {props.shankar} {props.monocept}
+      </div>
+      ;
     </>
   );
 };
