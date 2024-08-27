@@ -21,6 +21,7 @@ public class Mapper {
         customerResponseDTO.setFirstName(customer.getFirstName());
         customerResponseDTO.setLastName(customer.getLastName());
         customerResponseDTO.setTotalBalance(customer.getTotalBalance());
+        customerResponseDTO.setUsername(customer.getUser().getUsername());
         customerResponseDTO.setActive(customer.isActive());
 
         List<AccountResponseDTO> accountResponseDTOS = customer.getAccounts().stream()

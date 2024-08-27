@@ -1,12 +1,13 @@
 package com.techlabs.app.controller;
 
 import com.techlabs.app.dto.TransactionResponseDTO;
-import com.techlabs.app.exception.AccountRelatedException;
 import com.techlabs.app.service.TransactionService;
+import com.techlabs.app.util.PagedResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.LocalTime;
 
 @RestController
 @RequestMapping("/api/transactions")
@@ -24,28 +25,6 @@ public class TransactionController {
 
     @Autowired
     private TransactionService transactionService;
-
-    @Operation(summary = "Get all transactions of all accounts of logged customer")
-    @GetMapping
-    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactionsOfCurrentUserAccounts() {
-        logger.info("Fetching all transactions for all account of logger customer");
-        List<TransactionResponseDTO> transactionResponseDTOS = transactionService.getAllAccountsTransactions();
-        return new ResponseEntity<>(transactionResponseDTOS, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Get all transactions of a specific account of logged customer")
-    @GetMapping("/{accountNumber}")
-    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactionsOfCurrentUserAccount(@PathVariable(name = "accountNumber") long accountNumber) {
-        logger.info("Fetching all transactions for account number: {}", accountNumber);
-        try {
-            List<TransactionResponseDTO> transactionResponseDTOS = transactionService.getAllTransactions(accountNumber);
-            return new ResponseEntity<>(transactionResponseDTOS, HttpStatus.OK);
-        } catch (AccountRelatedException e) {
-            logger.error("Error fetching transactions for account number: {}", accountNumber, e);
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // or HttpStatus.FORBIDDEN based on the specific case
-        }
-    }
-
 
     @Operation(summary = "Make a new transaction")
     @PostMapping("/{senderAccount}/{receiverAccount}")
@@ -57,61 +36,33 @@ public class TransactionController {
         return new ResponseEntity<>(transactionResponseDTO, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Get all transactions for all accounts of the current user within a date range")
-    @GetMapping("/dates")
-    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactionsForAllAccountsBetweenRange(
-            @RequestParam(name = "startDate") LocalDate startDate,
-            @RequestParam(name = "endDate") LocalDate endDate) {
+    @Operation(summary = "Get transactions of the current user based on various criteria with pagination")
+    @GetMapping("/search")
+    public ResponseEntity<PagedResponse<TransactionResponseDTO>> getTransactions(
+            @RequestParam(name = "transactionId", required = false) Long transactionId,
+            @RequestParam(name = "accountNumber", required = false) Long accountNumber,
+            @RequestParam(name = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(name = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(name = "minAmount", required = false) Double minAmount,
+            @RequestParam(name = "maxAmount", required = false) Double maxAmount,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "transactionTimestamp") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction) {
 
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        logger.info("Fetching all transactions for all accounts of user {} between dates {} and {}",
-                currentUsername, startDate, endDate);
+        logger.info("Fetching transactions for user {} with criteria: accountNumber={}, startDate={}, endDate={}, minAmount={}, maxAmount={}",
+                currentUsername, accountNumber, startDate, endDate, minAmount, maxAmount);
 
-        LocalDateTime startDateTimestamp = startDate.atStartOfDay();
-        LocalDateTime endDateTimestamp = endDate.atStartOfDay();
+        // Convert LocalDate to LocalDateTime at the start and end of the day
+        LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = (endDate != null) ? endDate.atTime(LocalTime.MAX) : null;
 
-        List<TransactionResponseDTO> transactionResponseDTOS = transactionService
-                .getAllTransactionsForUserBetweenRange(currentUsername, startDateTimestamp, endDateTimestamp);
+        PagedResponse<TransactionResponseDTO> pagedTransactions = transactionService.searchTransactions(
+                currentUsername, transactionId, accountNumber, startDateTime, endDateTime, minAmount, maxAmount, page, size, sortBy, direction);
 
-        return new ResponseEntity<>(transactionResponseDTOS, HttpStatus.OK);
+        return new ResponseEntity<>(pagedTransactions, HttpStatus.OK);
     }
-
-    @Operation(summary = "Get all transactions for a particular account of the current user within a date range")
-    @GetMapping("/{accountNumber}/dates")
-    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactionsForAccountBetweenRange(
-            @PathVariable(name = "accountNumber") long accountNumber,
-            @RequestParam(name = "startDate") LocalDate startDate,
-            @RequestParam(name = "endDate") LocalDate endDate) {
-
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        logger.info("Fetching transactions for account number {} of user {} between dates {} and {}",
-                accountNumber, currentUsername, startDate, endDate);
-
-        LocalDateTime startDateTimestamp = startDate.atStartOfDay();
-        LocalDateTime endDateTimestamp = endDate.atStartOfDay();
-
-        List<TransactionResponseDTO> transactionResponseDTOS = transactionService
-                .getTransactionsForAccountOfUserBetweenRange(accountNumber, currentUsername, startDateTimestamp, endDateTimestamp);
-
-        return new ResponseEntity<>(transactionResponseDTOS, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Get Account balance by account number")
-    @GetMapping("/balance/{accountNumber}")
-    public ResponseEntity<Object> getBalanceOfAccount(@PathVariable(name = "accountNumber")Long accountNumber){
-        logger.info("Fetching account balance of account number : {}",accountNumber);
-        double balance = transactionService.getAccountBalance(accountNumber);
-        return ResponseEntity.ok("Account number : "+accountNumber+" Balance : "+balance);
-    }
-
-    @Operation(summary = "Get balance of all accounts of current customer")
-    @GetMapping("/totalBalance")
-    public ResponseEntity<Object> getTotalBalance(){
-        logger.info("Fetching total account balance of current customer");
-        double totalBalance = transactionService.getTotalBalance();
-        return ResponseEntity.ok("Total balance : "+totalBalance);
-    }
-
 
 
 }

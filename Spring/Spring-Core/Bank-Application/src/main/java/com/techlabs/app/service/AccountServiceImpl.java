@@ -21,10 +21,7 @@ import com.techlabs.app.util.PagedResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -254,89 +251,56 @@ public class AccountServiceImpl implements AccountService {
         return mapper.accountEntityToResponse(account);
     }
 
-    @Override
-    public List<TransactionResponseDTO> getAllTransactions(long accountNumber) {
-        logger.info("Fetching all transactions for account number: {}", accountNumber);
-
-        Account account = accountRepository.findById(accountNumber).orElseThrow(() ->
-                new AccountRelatedException("Account with account number: "
-                        + accountNumber + " is not available"));
-
-        if (!account.getBank().isActive()) {
-            throw new BankRealtedException("Bank with ID : "
-                    + account.getBank().getBankId() + " is not active");
-        }
-
-        List<Transaction> transactions = new ArrayList<>(account.getSentTransactions());
-        transactions.addAll(account.getReceivedTransactions());
-
-        logger.info("Successfully fetched transactions for account number: {}", accountNumber);
-        return mapper.getTransactionResponseList(transactions);
-    }
 
     @Override
-    public List<TransactionResponseDTO> getAllTransactionsBetweenRange(long accountNumber, LocalDateTime startDate, LocalDateTime endDate) {
-        logger.info("Fetching transactions for account number {} between dates {} and {}", accountNumber, startDate, endDate);
+    public PagedResponse<TransactionResponseDTO> searchTransactions(
+            Long transactionId, Long senderAccountNumber, Long receiverAccountNumber,
+            LocalDateTime startDate, LocalDateTime endDate,
+            Double minAmount, Double maxAmount,
+            int page, int size, String sortBy, String direction) {
 
-        Account account = accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new AccountRelatedException("Account with account number: " + accountNumber + " is not available"));
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-        if (!account.getBank().isActive()) {
-            throw new BankRealtedException("Bank with ID : "
-                    + account.getBank().getBankId() + " is not active");
-        }
-
-        List<Transaction> sentTransactions = transactionRepository
-                .findBySenderAccountNumber_AccountNumberAndTransactionTimestampBetween(accountNumber, startDate, endDate);
-
-        List<Transaction> receivedTransactions = transactionRepository
-                .findByReceiverAccountNumber_AccountNumberAndTransactionTimestampBetween(accountNumber, startDate, endDate);
-
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.addAll(sentTransactions);
-        transactions.addAll(receivedTransactions);
+        Page<Transaction> transactions = transactionRepository.searchTransactions(
+                transactionId, senderAccountNumber, receiverAccountNumber, startDate, endDate, minAmount, maxAmount, pageable);
 
         if (transactions.isEmpty()) {
-            logger.warn("No transactions found for account number {} between dates {} and {}", accountNumber, startDate, endDate);
-            throw new TransactionRelatedException("No transaction records found for account :" + accountNumber + " between date : " + startDate + " and date : " + endDate);
-        } else {
-            logger.info("Found {} transactions for account number {} between dates {} and {}", transactions.size(), accountNumber, startDate, endDate);
+            throw new TransactionRelatedException("No transactions found for the given criteria.");
         }
 
-        return mapper.getTransactionResponseList(transactions);
+        List<TransactionResponseDTO> transactionResponseDTOS = mapper.getTransactionResponseList(transactions.getContent());
+
+        return new PagedResponse<>(transactionResponseDTOS, transactions.getNumber(), transactions.getNumberOfElements(),
+                transactions.getTotalElements(), transactions.getTotalPages(), transactions.isLast());
     }
+
 
 
     @Override
-    public List<TransactionResponseDTO> getTransactionBetweenRange(LocalDateTime startDate, LocalDateTime endDate) {
-        logger.info("Fetching all transactions between dates {} and {}", startDate, endDate);
+    public PagedResponse<AccountResponseDTO> searchAccounts(Long accountNumber, Double minBalance, Double maxBalance,
+                                                            String bankName, Boolean activeStatus, int page, int size,
+                                                            String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-        List<Transaction> transactions = transactionRepository
-                .findByTransactionTimestampBetween(startDate, endDate);
-        if (transactions.isEmpty()) {
-            logger.warn("No transactions found between dates {} and {}", startDate, endDate);
-            throw new TransactionRelatedException("There are no transactions between : "
-                    + startDate + " and : " + endDate);
+        Page<Account> accounts;
+
+        if (accountNumber != null) {
+            accounts = accountRepository.findByAccountNumber(accountNumber, pageable);
         } else {
-            logger.info("Found {} transactions between dates {} and {}", transactions.size(), startDate, endDate);
+            accounts = accountRepository.findByCriteria(minBalance, maxBalance, bankName, activeStatus, pageable);
         }
 
-        return mapper.getTransactionResponseList(transactions);
-    }
-
-    @Override
-    public List<TransactionResponseDTO> getAllAccountsTransactions() {
-        logger.info("Fetching all transactions for all accounts");
-
-        List<Account> allAccounts = accountRepository.findAll();
-        List<Transaction> allTransactions = new ArrayList<>();
-
-        for (Account account : allAccounts) {
-            allTransactions.addAll(account.getSentTransactions());
+        if (accounts.isEmpty()) {
+            throw new AccountRelatedException("No accounts found for the given criteria.");
         }
 
-        logger.info("Found {} total transactions for all accounts", allTransactions.size());
+        List<AccountResponseDTO> accountResponseDTOS = mapper.getAccountResponseList(accounts.getContent());
 
-        return mapper.getTransactionResponseList(allTransactions);
+        return new PagedResponse<>(accountResponseDTOS, accounts.getNumber(), accounts.getNumberOfElements(),
+                accounts.getTotalElements(), accounts.getTotalPages(), accounts.isLast());
     }
+
 }

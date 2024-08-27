@@ -1,22 +1,12 @@
 package com.techlabs.app.service;
 
 import com.techlabs.app.dto.TransactionResponseDTO;
+import com.techlabs.app.util.PagedResponse;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface TransactionService {
-    List<TransactionResponseDTO> getAllTransactions(long accountNumber);
-
     TransactionResponseDTO makeTransaction(long senderAccount, long receiverAccount, double amount);
 
-    List<TransactionResponseDTO> getAllAccountsTransactions();
-
-    List<TransactionResponseDTO> getAllTransactionsForUserBetweenRange(String currentUsername, LocalDateTime startDateTimestamp, LocalDateTime endDateTimestamp);
-
-    List<TransactionResponseDTO> getTransactionsForAccountOfUserBetweenRange(long accountNumber, String currentUsername, LocalDateTime startDateTimestamp, LocalDateTime endDateTimestamp);
-
-    double getAccountBalance(Long accountNumber);
-
-    double getTotalBalance();
+    PagedResponse<TransactionResponseDTO> searchTransactions(String currentUsername, Long transactionId, Long accountNumber, LocalDateTime startDateTime, LocalDateTime endDateTime, Double minAmount, Double maxAmount, int page, int size, String sortBy, String direction);
 }

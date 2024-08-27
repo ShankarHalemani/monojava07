@@ -1,10 +1,12 @@
 package com.techlabs.app.service;
 
+import com.techlabs.app.dto.JWTAuthResponse;
 import com.techlabs.app.dto.LoginDTO;
 import com.techlabs.app.dto.RegisterDTO;
 import com.techlabs.app.entity.*;
 import com.techlabs.app.exception.AdminRelatedException;
 import com.techlabs.app.exception.CustomerRelatedException;
+import com.techlabs.app.exception.ResourceNotFoundException;
 import com.techlabs.app.exception.UserRelatedException;
 import com.techlabs.app.repository.AdminRepository;
 import com.techlabs.app.repository.CustomerRepository;
@@ -25,15 +27,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class AuthServiceImpl implements AuthService {
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
-    private final String FOLDER_PATH = "C:/Users/ACER/Documents/MonoJava/Spring/Customers/";
 
     @Autowired
     private UserRepository userRepository;
@@ -56,8 +54,11 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private AdminRepository adminRepository;
 
+    @Autowired
+    private FileService fileService;
+
     @Override
-    public String login(LoginDTO loginDTO) {
+    public JWTAuthResponse login(LoginDTO loginDTO) {
         logger.info("Attempting login for username: {}", loginDTO.getUsername());
         User user = userRepository.findUserByUsername(loginDTO.getUsername()).orElseThrow(() ->
                 new UsernameNotFoundException("User with username : " + loginDTO.getUsername() + " not found"));
@@ -69,8 +70,19 @@ public class AuthServiceImpl implements AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String token = jwtTokenProvider.generateToken(authentication);
 
+        JWTAuthResponse jwtAuthResponse = new JWTAuthResponse();
+        jwtAuthResponse.setAccessToken(token);
+        jwtAuthResponse.setFirstName(user.getFirstName());
+        for (Role role : user.getRoles()) {
+            jwtAuthResponse.setRole(role.getName());
+            break;
+        }
+        if (jwtAuthResponse.getRole().equals("ROLE_CUSTOMER")) {
+            jwtAuthResponse.setUserId(user.getUserId());
+        }
+
         logger.info("Login successful for username: {}", loginDTO.getUsername());
-        return token;
+        return jwtAuthResponse;
     }
 
     @Override
@@ -126,32 +138,47 @@ public class AuthServiceImpl implements AuthService {
         }
         if (role.equals("ROLE_CUSTOMER")) {
             customerRepository.save(customer);
+            try {
+                fileService.saveFile(file, customer);
+            } catch (IOException e) {
+                throw new ResourceNotFoundException(e.getMessage());
+            }
             logger.info("Registration successful for Customer with username: {}", registerDTO.getUsername());
-        }
-
-
-        if (role.equals("ROLE_CUSTOMER")) {
-            saveCustomerFile(file, customer.getCustomerId());
         }
 
         return "Registration successful for role : " + role.substring(5);
     }
 
-    private void saveCustomerFile(MultipartFile file, Long customerId) {
-        try {
-            String folderPath = FOLDER_PATH + customerId;
-            File directory = new File(folderPath);
-            if (!directory.exists()) {
-                directory.mkdirs();
-            }
-
-            String filePath = folderPath + "/" + file.getOriginalFilename();
-            file.transferTo(new File(filePath).toPath());
-            logger.info("File saved at: {}", filePath);
-        } catch (IOException e) {
-            logger.error("Error saving file: {}", e.getMessage());
-            throw new RuntimeException("File saving failed");
+    @Override
+    public Boolean validateAdminToken(String token) {
+        String username = jwtTokenProvider.getUsername(token);
+        Optional<User> byUsername = userRepository.findUserByUsername(username);
+        if (byUsername.isEmpty())
+            return false;
+        Set<Role> roles = byUsername.get().getRoles();
+        for (Role role : roles) {
+            if (role.getName().equalsIgnoreCase("ROLE_ADMIN"))
+                return true;
         }
+
+        return false;
+
+    }
+
+    @Override
+    public Boolean validateCustomerToken(String token) {
+        String username = jwtTokenProvider.getUsername(token);
+        Optional<User> byUsername = userRepository.findUserByUsername(username);
+        if (byUsername.isEmpty())
+            return false;
+        Set<Role> roles = byUsername.get().getRoles();
+        for (Role role : roles) {
+            if (role.getName().equalsIgnoreCase("ROLE_CUSTOMER"))
+                return true;
+        }
+
+        return false;
+
     }
 
 }

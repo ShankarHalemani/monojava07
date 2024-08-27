@@ -12,7 +12,7 @@
         <file>Bank-Application/logs/application.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- Roll daily -->
-            <fileNamePattern>logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>Bank-Application/logs/application.%d{yyyy-MM-dd}.log</fileNamePattern>
             <!-- Keep 30 days worth of logs -->
             <maxHistory>30</maxHistory>
         </rollingPolicy>

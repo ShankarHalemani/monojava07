@@ -18,5 +18,10 @@ public interface CustomerService {
 
     void deleteCustomer(long customerId);
 
-    CustomerResponseDTO activateCustomer(CustomerRequestDTO customerRequestDTO);
+    CustomerResponseDTO activateCustomer(long customerId);
+
+    PagedResponse<CustomerResponseDTO> searchCustomers(Long customerId, String firstName, String lastName,
+                                                       Boolean active, int page, int size, String sortBy, String direction);
+
+    PagedResponse<CustomerResponseDTO> getActiveCustomersWithNoAccounts(int page, int size, String sortBy, String direction);
 }

@@ -1,13 +1,9 @@
 package com.techlabs.app.dto;
 
-import com.techlabs.app.entity.Bank;
-import com.techlabs.app.entity.Transaction;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import java.util.List;
 
 @Getter
 @Setter

@@ -144,4 +144,26 @@ public class BankServiceImpl implements BankService {
         bankRepository.save(bank);
         logger.info("Bank with ID: {} deleted successfully", bankId);
     }
+
+    @Override
+    public PagedResponse<BankResponseDTO> searchBanks(Long bankId, String fullName, String abbreviation, Boolean active, int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<Bank> banks;
+
+        if (bankId != null) {
+            banks = bankRepository.findByBankId(bankId, pageable);
+        } else {
+            banks = bankRepository.findByCriteria(fullName, abbreviation, active, pageable);
+        }
+
+        if (banks.getContent().isEmpty()) {
+            throw new BankRealtedException("No Banks Found");
+        }
+
+        List<BankResponseDTO> bankResponseDTOS = mapper.getBankResponseList(banks.getContent());
+        return new PagedResponse<>(bankResponseDTOS, banks.getNumber(), banks.getNumberOfElements(),
+                banks.getTotalElements(), banks.getTotalPages(), banks.isLast());
+    }
+
 }

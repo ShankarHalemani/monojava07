@@ -22,14 +22,11 @@ public class CustomerRequestDTO {
     @NotBlank
     private String lastName;
 
-    @NotBlank
     private String username;
 
-    @NotBlank
     private String password;
 
-    @NotNull
     private boolean active;
 
-    private List<Long> accountNumbers;
+//    private List<Long> accountNumbers;
 }

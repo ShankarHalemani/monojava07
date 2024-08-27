@@ -8,13 +8,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.LocalTime;
 
 @RestController
 @RequestMapping("/api/accounts")
@@ -43,7 +44,7 @@ public class AccountController {
     public ResponseEntity<AccountResponseDTO> getAccountByAccountNumber(@PathVariable(name = "accountNumber") long accountNumber) {
         logger.info("Fetching account with account number: {}", accountNumber);
         AccountResponseDTO accountResponseDTO = accountService.getAccountByAccountNumber(accountNumber);
-        return new ResponseEntity<>(accountResponseDTO, HttpStatus.FOUND);
+        return new ResponseEntity<>(accountResponseDTO, HttpStatus.OK);
     }
 
     @Operation(summary = "Create a new account")
@@ -80,54 +81,51 @@ public class AccountController {
         return ResponseEntity.ok("Account with account number: " + accountNumber + " deleted successfully");
     }
 
-    @Operation(summary = "Get all transactions of a specific account")
-    @GetMapping("/transactions/{accountNumber}")
-    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactionsOfCurrentUserAccount(
-            @PathVariable(name = "accountNumber") long accountNumber) {
-        logger.info("Fetching all transactions for account number: {}", accountNumber);
-        List<TransactionResponseDTO> transactionResponseDTOS = accountService.getAllTransactions(accountNumber);
-        return new ResponseEntity<>(transactionResponseDTOS, HttpStatus.OK);
+
+    @Operation(summary = "Get transactions based on various criteria with pagination")
+    @GetMapping("/transactions/search")
+    public ResponseEntity<PagedResponse<TransactionResponseDTO>> getTransactions(
+            @RequestParam(name = "transactionId", required = false) Long transactionId,
+            @RequestParam(name = "senderAccountNumber", required = false) Long senderAccountNumber,
+            @RequestParam(name = "receiverAccountNumber", required = false) Long receiverAccountNumber,
+            @RequestParam(name = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(name = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(name = "minAmount", required = false) Double minAmount,
+            @RequestParam(name = "maxAmount", required = false) Double maxAmount,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "transactionId") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction) {
+
+        // Convert LocalDate to LocalDateTime at the start of the day
+        LocalDateTime startDateTime = (startDate != null) ? startDate.atStartOfDay() : null;
+        LocalDateTime endDateTime = (endDate != null) ? endDate.atTime(LocalTime.MAX) : null;
+
+        PagedResponse<TransactionResponseDTO> pagedTransactions = accountService.searchTransactions(
+                transactionId, senderAccountNumber, receiverAccountNumber, startDateTime, endDateTime, minAmount, maxAmount, page, size, sortBy, direction);
+
+        return new ResponseEntity<>(pagedTransactions, HttpStatus.OK);
     }
 
-    @Operation(summary = "Get all transactions for a particular account within a date range")
-    @GetMapping("/transactions/{accountNumber}/dates")
-    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactionsForAccountBetweenRange(
-            @PathVariable(name = "accountNumber") long accountNumber,
-            @RequestParam(name = "startDate") LocalDate startDate,
-            @RequestParam(name = "endDate") LocalDate endDate) {
+    @Operation(summary = "Get accounts based on criteria with pagination")
+    @GetMapping("/search")
+    public ResponseEntity<PagedResponse<AccountResponseDTO>> getAccounts(
+            @RequestParam(name = "accountNumber", required = false) Long accountNumber,
+            @RequestParam(name = "minBalance", required = false) Double minBalance,
+            @RequestParam(name = "maxBalance", required = false) Double maxBalance,
+            @RequestParam(name = "bankName", required = false) String bankName,
+            @RequestParam(name = "activeStatus", required = false) Boolean activeStatus,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "accountNumber") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction) {
 
-        logger.info("Fetching transactions for account number {} between dates {} and {}"
-                , accountNumber, startDate, endDate);
-        LocalDateTime startDateTimestamp = startDate.atStartOfDay();
-        LocalDateTime endDateTimestamp = endDate.atStartOfDay();
-        List<TransactionResponseDTO> transactionResponseDTOS = accountService
-                .getAllTransactionsBetweenRange(accountNumber, startDateTimestamp, endDateTimestamp);
-        return new ResponseEntity<>(transactionResponseDTOS, HttpStatus.OK);
+        PagedResponse<AccountResponseDTO> pagedAccounts = accountService.searchAccounts(
+                accountNumber, minBalance, maxBalance, bankName, activeStatus, page, size, sortBy, direction);
+
+        return new ResponseEntity<>(pagedAccounts, HttpStatus.OK);
     }
 
-    @Operation(summary = "Get all transactions for all accounts within a date range")
-    @GetMapping("/transactions/dates")
-    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactionsBetweenDateRange(
-            @RequestParam(name = "startDate") LocalDate startDate,
-            @RequestParam(name = "endDate") LocalDate endDate) {
-
-        logger.info("Fetching all transactions for all accounts between dates {} and {}", startDate, endDate);
-        LocalDateTime startDateTimestamp = startDate.atStartOfDay();
-        LocalDateTime endDateTimestamp = endDate.atStartOfDay();
-        List<TransactionResponseDTO> transactionResponseDTOS = accountService
-                .getTransactionBetweenRange(startDateTimestamp, endDateTimestamp);
-        return new ResponseEntity<>(transactionResponseDTOS, HttpStatus.OK);
-    }
-
-    @Operation(summary = "Get all transactions for all accounts of the all users")
-    @GetMapping("/transactions/all")
-    public ResponseEntity<List<TransactionResponseDTO>> getAllTransactionsForAllAccounts() {
-
-        logger.info("Fetching all transactions for all accounts of all customers");
-        List<TransactionResponseDTO> transactionResponseDTOS = accountService
-                .getAllAccountsTransactions();
-        return new ResponseEntity<>(transactionResponseDTOS, HttpStatus.OK);
-    }
 
 
 }

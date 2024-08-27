@@ -159,33 +159,28 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerResponseDTO activateCustomer(CustomerRequestDTO customerRequestDTO) {
-        logger.info("Activating customer with ID: {}", customerRequestDTO.getCustomerId());
-        Customer customer = customerRepository.findById(customerRequestDTO.getCustomerId())
+    public CustomerResponseDTO activateCustomer(long customerId) {
+        logger.info("Activating customer with ID: {}", customerId);
+        Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new CustomerRelatedException("Customer with ID : "
-                        + customerRequestDTO.getCustomerId() + " is not found"));
+                        + customerId + " is not found"));
 
         if (customer.isActive()) {
             throw new CustomerRelatedException("Customer with ID : "
-                    + customerRequestDTO.getCustomerId() + " is already active");
-        }
-
-        if (!customerRequestDTO.isActive()) {
-            throw new CustomerRelatedException("Customer with ID : "
-                    + customerRequestDTO.getCustomerId() + " is already inactive");
+                    + customerId + " is already active");
         }
 
         User user = customer.getUser();
         user.setActive(true);
         customer.setActive(true);
 
-        List<Long> accountNumbersToActivate = customerRequestDTO.getAccountNumbers();
-
-        customer.getAccounts().forEach(account -> {
-            if (accountNumbersToActivate.contains(account.getAccountNumber())) {
-                account.setActive(true);
-            }
-        });
+//        List<Long> accountNumbersToActivate = customerRequestDTO.getAccountNumbers();
+//
+//        customer.getAccounts().forEach(account -> {
+//            if (accountNumbersToActivate.contains(account.getAccountNumber())) {
+//                account.setActive(true);
+//            }
+//        });
 
         double totalBalance = customer.getAccounts().stream()
                 .filter(singleAccount -> singleAccount.getBank().isActive() && singleAccount.isActive())
@@ -198,7 +193,54 @@ public class CustomerServiceImpl implements CustomerService {
         userRepository.save(user);
         customerRepository.save(customer);
 
-        logger.info("Customer with ID: {} activated successfully", customerRequestDTO.getCustomerId());
+        logger.info("Customer with ID: {} activated successfully", customerId);
         return mapper.customerEntityToResponse(customer);
     }
+
+    @Override
+    public PagedResponse<CustomerResponseDTO> searchCustomers(Long customerId, String firstName, String lastName,
+                                                              Boolean active, int page, int size, String sortBy, String direction) {
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size,sort);
+        Page<Customer> customers;
+
+        if (customerId != null) {
+            customers = customerRepository.findByCustomerId(customerId, pageable);
+        } else {
+            customers = customerRepository.findByCriteria(firstName, lastName, active, pageable);
+        }
+
+        if (customers.getContent().isEmpty()) {
+            throw new CustomerRelatedException("No Customers Found");
+        }
+
+        List<CustomerResponseDTO> customerResponseDTOS = mapper.getCustomerResponseList(customers.getContent());
+
+        return new PagedResponse<>(customerResponseDTOS, customers.getNumber(), customers.getNumberOfElements(),
+                customers.getTotalElements(), customers.getTotalPages(), customers.isLast());
+    }
+
+
+    @Override
+    public PagedResponse<CustomerResponseDTO> getActiveCustomersWithNoAccounts(int page, int size, String sortBy, String direction) {
+        logger.info("Fetching all active customers with no accounts");
+
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        Page<Customer> customers = customerRepository.findByActiveTrueAndAccountsIsEmpty(pageable);
+
+        if (customers.getContent().isEmpty()) {
+            throw new CustomerRelatedException("No active customers without accounts found");
+        }
+
+        List<CustomerResponseDTO> customerResponseDTOS = mapper.getCustomerResponseList(customers.getContent());
+
+        return new PagedResponse<>(customerResponseDTOS, customers.getNumber(), customers.getNumberOfElements(),
+                customers.getTotalElements(), customers.getTotalPages(), customers.isLast());
+    }
+
 }

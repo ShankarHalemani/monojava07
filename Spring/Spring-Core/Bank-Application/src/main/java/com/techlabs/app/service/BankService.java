@@ -18,4 +18,6 @@ public interface BankService {
     void deleteBankById(long bankId);
 
     BankResponseDTO activateBank(long bankId);
+
+    PagedResponse<BankResponseDTO> searchBanks(Long bankId, String fullName, String abbreviation, Boolean active, int page, int size, String sortBy, String direction);
 }

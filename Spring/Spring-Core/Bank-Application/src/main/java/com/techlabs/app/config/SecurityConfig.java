@@ -38,59 +38,61 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authorize -> authorize
-                        // Swagger UI and API docs
-                        .requestMatchers(HttpMethod.GET,
-                                "/swagger-ui/**",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/swagger-ui.html",
-                                "/webjars/**").permitAll()
+                                // Swagger UI and API docs
+                                .requestMatchers(HttpMethod.GET,
+                                        "/swagger-ui/**",
+                                        "/v3/api-docs/**",
+                                        "/swagger-resources/**",
+                                        "/swagger-ui.html",
+                                        "/webjars/**").permitAll()
 
-                        // Authentication endpoints
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/signin").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
+                                // Authentication endpoints
+                                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/auth/signin").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/auth/signup").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/file/view/**").permitAll()
 
-                        // Customer Endpoints
-                        .requestMatchers(HttpMethod.GET, "/api/customers").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/customers").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/customers").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/customers/activate").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/customers/{customerId}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/customers/{customerId}").hasRole("ADMIN")
+                                // Customer Endpoints
+                                .requestMatchers(HttpMethod.GET, "/api/customers").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/customers").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/customers").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/customers/activate").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/api/customers/{customerId}").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/customers/{customerId}").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/customers/search").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/customers/active-no-accounts").hasRole("ADMIN")
 
-                        // Bank Endpoints
-                        .requestMatchers(HttpMethod.GET, "/api/banks").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/banks").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/banks").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/banks/activate/{bankId}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/banks/{bankId}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/banks/{bankId}").hasRole("ADMIN")
+                                // Bank Endpoints
+                                .requestMatchers(HttpMethod.GET, "/api/banks").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/banks").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/banks").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.PUT, "/api/banks/activate/{bankId}").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/banks/{bankId}").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/banks/{bankId}").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/banks/search").hasRole("ADMIN")
 
-                        // Account Endpoints
-                        .requestMatchers(HttpMethod.PUT, "/api/accounts/activate/{accountNumber}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/accounts/{customerId}/{bankId}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/accounts/{accountNumber}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/accounts/{accountNumber}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/accounts/{accountNumber}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/accounts").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/accounts/transactions/{accountNumber}").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/accounts/transactions/{accountNumber}/dates").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/accounts/transactions/dates").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/accounts/transactions/all").hasRole("ADMIN")
+                                // Account Endpoints
+                                .requestMatchers(HttpMethod.PUT, "/api/accounts/activate/{accountNumber}").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/accounts/{customerId}/{bankId}").hasRole("ADMIN")
+//                        .requestMatchers(HttpMethod.GET, "/api/accounts/{accountNumber}").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.POST, "/api/accounts/{accountNumber}").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.DELETE, "/api/accounts/{accountNumber}").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/accounts").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/accounts/search").hasRole("ADMIN")
+                                .requestMatchers(HttpMethod.GET, "/api/accounts/transactions/search").hasRole("ADMIN")
 
-                        // Transaction Endpoints
-                        .requestMatchers(HttpMethod.POST, "/api/transactions/{senderAccount}/{receiverAccount}").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET, "/api/transactions").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET, "/api/transactions/{accountNumber}").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET, "/api/transactions/{accountNumber}/dates").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET, "/api/transactions/totalBalance").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET, "/api/transactions/dates").hasRole("CUSTOMER")
-                        .requestMatchers(HttpMethod.GET, "/api/transactions/balance/{accountNumber}").hasRole("CUSTOMER")
+                                // Transaction Endpoints
+                                .requestMatchers(HttpMethod.POST, "/api/transactions/{senderAccount}/{receiverAccount}").hasRole("CUSTOMER")
+                                .requestMatchers(HttpMethod.GET, "/api/transactions").hasRole("CUSTOMER")
+                                .requestMatchers(HttpMethod.GET, "/api/transactions/{accountNumber}").hasRole("CUSTOMER")
+                                .requestMatchers(HttpMethod.GET, "/api/transactions/{accountNumber}/dates").hasRole("CUSTOMER")
+                                .requestMatchers(HttpMethod.GET, "/api/transactions/totalBalance").hasRole("CUSTOMER")
+                                .requestMatchers(HttpMethod.GET, "/api/transactions/dates").hasRole("CUSTOMER")
+                                .requestMatchers(HttpMethod.GET, "/api/transactions/balance/{accountNumber}").hasRole("CUSTOMER")
 
-                        // Any other request must be authenticated
-                        .anyRequest().authenticated()
+                                // Any other request must be authenticated
+                                .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

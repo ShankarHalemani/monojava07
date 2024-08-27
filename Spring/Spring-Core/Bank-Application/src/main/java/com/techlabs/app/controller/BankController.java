@@ -40,7 +40,7 @@ public class BankController {
     public ResponseEntity<BankResponseDTO> getBankById(@PathVariable(name = "bankId") long bankId) {
         logger.info("Fetching bank with ID: {}", bankId);
         BankResponseDTO bankResponseDTO = bankService.getBankById(bankId);
-        return new ResponseEntity<>(bankResponseDTO, HttpStatus.FOUND);
+        return new ResponseEntity<>(bankResponseDTO, HttpStatus.OK);
     }
 
     @Operation(summary = "Add a new bank")
@@ -74,4 +74,24 @@ public class BankController {
         bankService.deleteBankById(bankId);
         return ResponseEntity.ok("Bank with ID: " + bankId + " deleted successfully");
     }
+
+    @Operation(summary = "Search Banks based on ID, fullName, abbreviation, and active status")
+    @GetMapping("/search")
+    public ResponseEntity<PagedResponse<BankResponseDTO>> searchBanks(
+            @RequestParam(required = false) Long bankId,
+            @RequestParam(required = false) String fullName,
+            @RequestParam(required = false) String abbreviation,
+            @RequestParam(required = false) Boolean active,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "bankId") String sortBy,
+            @RequestParam(name = "direction", defaultValue = "asc") String direction
+    ) {
+        logger.info("Searching banks with criteria - bankId: {}, fullName: {}, abbreviation: {}, active: {}",
+                bankId, fullName, abbreviation, active);
+
+        PagedResponse<BankResponseDTO> banks = bankService.searchBanks(bankId, fullName, abbreviation, active, page, size, sortBy, direction);
+        return new ResponseEntity<>(banks, HttpStatus.OK);
+    }
+
 }

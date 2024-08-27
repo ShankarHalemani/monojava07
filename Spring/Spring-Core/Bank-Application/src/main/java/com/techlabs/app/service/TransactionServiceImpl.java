@@ -12,9 +12,11 @@ import com.techlabs.app.mapper.Mapper;
 import com.techlabs.app.repository.AccountRepository;
 import com.techlabs.app.repository.TransactionRepository;
 import com.techlabs.app.repository.UserRepository;
+import com.techlabs.app.util.PagedResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionServiceImpl implements TransactionService {
@@ -40,44 +43,6 @@ public class TransactionServiceImpl implements TransactionService {
     @Autowired
     private Mapper mapper;
 
-    @Override
-    public List<TransactionResponseDTO> getAllAccountsTransactions() {
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findUserByUsername(currentUsername).orElseThrow(() ->
-                new UserRelatedException("User with username : " + currentUsername + " not found"));
-
-        Customer customer = user.getCustomer();
-        List<Account> accounts = customer.getAccounts();
-
-        Set<Transaction> allAccountsTransactions = new HashSet<>();
-        for (Account account : accounts) {
-            allAccountsTransactions.addAll(account.getSentTransactions());
-            allAccountsTransactions.addAll(account.getReceivedTransactions());
-        }
-
-        logger.info("Successfully fetched transactions for Customer : {}", currentUsername);
-        return mapper.getTransactionResponseList(new ArrayList<>(allAccountsTransactions));
-    }
-
-
-    @Override
-    public List<TransactionResponseDTO> getAllTransactions(long accountNumber) {
-        logger.info("Fetching all transactions for account number: {}", accountNumber);
-
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        Account account = accountRepository.findById(accountNumber).orElseThrow(() ->
-                new AccountRelatedException("Account with account number: " + accountNumber + " is not available"));
-
-        if (!account.getCustomer().getUser().getUsername().equals(currentUsername)) {
-            throw new AccountRelatedException("Unauthorized access to transactions of account number: " + accountNumber);
-        }
-
-        List<Transaction> transactions = new ArrayList<>(account.getSentTransactions());
-        transactions.addAll(account.getReceivedTransactions());
-
-        logger.info("Successfully fetched transactions for account number: {}", accountNumber);
-        return mapper.getTransactionResponseList(transactions);
-    }
 
 
     @Override
@@ -145,86 +110,48 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public List<TransactionResponseDTO> getAllTransactionsForUserBetweenRange(String username, LocalDateTime startDate, LocalDateTime endDate) {
-        logger.info("Fetching all transactions for user {} between dates {} and {}", username, startDate, endDate);
+    public PagedResponse<TransactionResponseDTO> searchTransactions(
+            String username, Long transactionId, Long accountNumber,
+            LocalDateTime startDate, LocalDateTime endDate,
+            Double minAmount, Double maxAmount,
+            int page, int size, String sortBy, String direction) {
 
         User user = userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new UserRelatedException("User with username: " + username + " not found"));
 
         Customer customer = user.getCustomer();
         List<Account> accounts = customer.getAccounts();
+
+        // Check if the accountNumber is provided and belongs to the customer
+        if (accountNumber != null) {
+            accounts = accounts.stream()
+                    .filter(account -> account.getAccountNumber() == accountNumber)
+                    .collect(Collectors.toList());
+
+            if (accounts.isEmpty()) {
+                throw new AccountRelatedException("Unauthorized access or account not found.");
+            }
+        }
+
         Set<Transaction> allTransactions = new HashSet<>();
-
         for (Account account : accounts) {
-            allTransactions.addAll(transactionRepository.findBySenderAccountNumber_AccountNumberAndTransactionTimestampBetween(
-                    account.getAccountNumber(), startDate, endDate));
-            allTransactions.addAll(transactionRepository.findByReceiverAccountNumber_AccountNumberAndTransactionTimestampBetween(
-                    account.getAccountNumber(), startDate, endDate));
+            allTransactions.addAll(transactionRepository.searchTransactions(
+                    transactionId, account.getAccountNumber(), null, startDate, endDate, minAmount, maxAmount, Pageable.unpaged()).getContent());
+            allTransactions.addAll(transactionRepository.searchTransactions(
+                    transactionId, null, account.getAccountNumber(), startDate, endDate, minAmount, maxAmount, Pageable.unpaged()).getContent());
         }
 
-        logger.info("Found {} transactions for user {} between dates {} and {}",
-                allTransactions.size(), username, startDate, endDate);
+        List<Transaction> transactionsList = new ArrayList<>(allTransactions);
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
 
-        return mapper.getTransactionResponseList(new ArrayList<>(allTransactions));
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), transactionsList.size());
+        Page<Transaction> transactionsPage = new PageImpl<>(transactionsList.subList(start, end), pageable, transactionsList.size());
+
+        List<TransactionResponseDTO> transactionResponseDTOS = mapper.getTransactionResponseList(transactionsPage.getContent());
+        return new PagedResponse<>(transactionResponseDTOS, transactionsPage.getNumber(), transactionsPage.getNumberOfElements(),
+                transactionsPage.getTotalElements(), transactionsPage.getTotalPages(), transactionsPage.isLast());
     }
 
-
-
-    @Override
-    public List<TransactionResponseDTO> getTransactionsForAccountOfUserBetweenRange(long accountNumber, String username, LocalDateTime startDate, LocalDateTime endDate) {
-        logger.info("Fetching transactions for account number {} of user {} between dates {} and {}",
-                accountNumber, username, startDate, endDate);
-
-        Account account = accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new AccountRelatedException("Account with account number: " + accountNumber + " is not available"));
-
-        if (!account.getCustomer().getUser().getUsername().equals(username)) {
-            throw new AccountRelatedException("Unauthorized access to account number: " + accountNumber);
-        }
-
-        List<Transaction> sentTransactions = transactionRepository.findBySenderAccountNumber_AccountNumberAndTransactionTimestampBetween(
-                accountNumber, startDate, endDate);
-        List<Transaction> receivedTransactions = transactionRepository.findByReceiverAccountNumber_AccountNumberAndTransactionTimestampBetween(
-                accountNumber, startDate, endDate);
-
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.addAll(sentTransactions);
-        transactions.addAll(receivedTransactions);
-
-        logger.info("Found {} transactions for account number {} of user {} between dates {} and {}",
-                transactions.size(), accountNumber, username, startDate, endDate);
-
-        return mapper.getTransactionResponseList(transactions);
-    }
-
-    @Override
-    public double getAccountBalance(Long accountNumber) {
-        Account account = accountRepository.findById(accountNumber)
-                .orElseThrow(() -> new AccountRelatedException("Account with account number: " + accountNumber + " is not available"));
-
-        if (!account.getBank().isActive()) {
-            throw new BankRealtedException("Bank with ID : "
-                    + account.getBank().getBankId() + " is not active");
-        }
-
-        if (!account.isActive()) {
-            throw new AccountRelatedException("Account with account number : " + account.getAccountNumber() + " is not active");
-        }
-
-        return account.getBalance();
-    }
-
-    @Override
-    public double getTotalBalance() {
-        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
-        User user = userRepository.findUserByUsername(currentUsername).get();
-
-        Customer customer = user.getCustomer();
-        double totalBalance = customer.getAccounts().stream()
-                .filter(account -> account.getBank().isActive() && account.isActive())
-                .mapToDouble(Account::getBalance)
-                .sum();
-
-        return totalBalance;
-    }
 }

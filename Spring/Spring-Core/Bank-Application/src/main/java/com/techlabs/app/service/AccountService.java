@@ -5,7 +5,6 @@ import com.techlabs.app.dto.TransactionResponseDTO;
 import com.techlabs.app.util.PagedResponse;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public interface AccountService {
     PagedResponse<AccountResponseDTO> getAllAccounts(int page, int size, String sortBy, String direction);
@@ -20,11 +19,7 @@ public interface AccountService {
 
     AccountResponseDTO activateAccount(long accountNumber);
 
-    List<TransactionResponseDTO> getAllTransactions(long accountNumber);
+    PagedResponse<AccountResponseDTO> searchAccounts(Long accountNumber, Double minBalance, Double maxBalance, String bankName, Boolean activeStatus, int page, int size, String sortBy, String direction);
 
-    List<TransactionResponseDTO> getAllTransactionsBetweenRange(long accountNumber, LocalDateTime startDateTimestamp, LocalDateTime endDateTimestamp);
-
-    List<TransactionResponseDTO> getTransactionBetweenRange(LocalDateTime startDateTimestamp, LocalDateTime endDateTimestamp);
-
-    List<TransactionResponseDTO> getAllAccountsTransactions();
+    PagedResponse<TransactionResponseDTO> searchTransactions(Long transactionId, Long senderAccountNumber, Long receiverAccountNumber, LocalDateTime startDateTime, LocalDateTime endDateTime, Double minAmount, Double maxAmount, int page, int size, String sortBy, String direction);
 }

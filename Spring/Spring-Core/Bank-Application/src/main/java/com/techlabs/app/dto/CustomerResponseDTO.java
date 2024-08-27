@@ -1,6 +1,5 @@
 package com.techlabs.app.dto;
 
-import com.techlabs.app.entity.Account;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +20,8 @@ public class CustomerResponseDTO {
     private String lastName;
 
     private double totalBalance;
+
+    private String username;
 
     private List<AccountResponseDTO> accounts;
 

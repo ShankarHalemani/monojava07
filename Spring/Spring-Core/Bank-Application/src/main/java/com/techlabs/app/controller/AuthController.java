@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -28,9 +29,7 @@ public class AuthController {
     @PostMapping(value = {"/login", "/signin"})
     public ResponseEntity<JWTAuthResponse> login(@Valid @RequestBody LoginDTO loginDTO) {
         logger.info("User login with username: {}", loginDTO.getUsername());
-        String token = authService.login(loginDTO);
-        JWTAuthResponse jwtAuthResponse = new JWTAuthResponse();
-        jwtAuthResponse.setAccessToken(token);
+        JWTAuthResponse jwtAuthResponse = authService.login(loginDTO);
         return ResponseEntity.ok(jwtAuthResponse);
     }
 
@@ -39,7 +38,7 @@ public class AuthController {
     public ResponseEntity<String> register(
             @RequestPart("registerDTO") String registerDTOStr,
             @RequestParam(name = "role") String tempRole,
-            @RequestParam("file") MultipartFile file
+            @RequestParam(name = "file", required = false) MultipartFile file
     ) {
         ObjectMapper objectMapper = new ObjectMapper();
         RegisterDTO registerDTO;
@@ -53,5 +52,16 @@ public class AuthController {
         logger.info("User registration with role: {}", role);
         String response = authService.register(registerDTO, role, file);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/admin-verification")
+    public Boolean validateAdminToken(@RequestParam String accessToken) {
+        System.out.println(accessToken);
+        return authService.validateAdminToken(accessToken);
+    }
+
+    @GetMapping("/customer-verification")
+    public Boolean customerDashboard(@RequestParam String accessToken) {
+        return authService.validateCustomerToken(accessToken);
     }
 }
